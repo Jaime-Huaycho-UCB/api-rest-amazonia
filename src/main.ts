@@ -13,6 +13,7 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule, {
 		logger: config.logger
 	});
+	app.enableShutdownHooks();
 	const myServer = app.get(MyServerConfig).get();
 
 	app.setGlobalPrefix('api')
