@@ -1,26 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTiposProyectoDto } from '../dto/create-tipos-proyecto.dto';
 import { UpdateTiposProyectoDto } from '../dto/update-tipos-proyecto.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { TipoProyecto } from '../entities/tipo-proyecto.entity';
+import { FindManyOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class TiposProyectosService {
-  create(createTiposProyectoDto: CreateTiposProyectoDto) {
-    return 'This action adds a new tiposProyecto';
-  }
+	constructor(
+		@InjectRepository(TipoProyecto)
+		private readonly tipoProyectoRepository: Repository<TipoProyecto>
+	){}
 
-  findAll() {
-    return `This action returns all tiposProyectos`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} tiposProyecto`;
-  }
-
-  update(id: number, updateTiposProyectoDto: UpdateTiposProyectoDto) {
-    return `This action updates a #${id} tiposProyecto`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} tiposProyecto`;
-  }
+	async findAll(selectTemplate: FindManyOptions<TipoProyecto>){
+		const tiposProyectos = await this.tipoProyectoRepository.find({
+			...selectTemplate
+		})
+		return tiposProyectos;
+	}
 }

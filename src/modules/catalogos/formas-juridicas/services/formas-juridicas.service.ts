@@ -1,26 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { CreateFormasJuridicaDto } from '../dto/create-formas-juridica.dto';
-import { UpdateFormasJuridicaDto } from '../dto/update-formas-juridica.dto';
+import { CreateFormasJuridicaDto } from '../dto/inputs/create-formas-juridica.dto';
+import { UpdateFormasJuridicaDto } from '../dto/inputs/update-formas-juridica.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FormaJuridica } from '../entities/forma-juridica.entity';
+import { FindManyOptions, Repository } from 'typeorm';
+import { FormaJuridicaFormsDto } from '../dto/forma-juridica-forms.dto';
 
 @Injectable()
 export class FormasJuridicasService {
-  create(createFormasJuridicaDto: CreateFormasJuridicaDto) {
-    return 'This action adds a new formasJuridica';
-  }
+	constructor(
+		@InjectRepository(FormaJuridica)
+		private readonly formaJuridicaRepository: Repository<FormaJuridica>
+	) { }
 
-  findAll() {
-    return `This action returns all formasJuridicas`;
-  }
+	create(createFormasJuridicaDto: CreateFormasJuridicaDto) {
+		return 'This action adds a new formasJuridica';
+	}
 
-  findOne(id: number) {
-    return `This action returns a #${id} formasJuridica`;
-  }
-
-  update(id: number, updateFormasJuridicaDto: UpdateFormasJuridicaDto) {
-    return `This action updates a #${id} formasJuridica`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} formasJuridica`;
-  }
+	async findAll(templateSelect: FindManyOptions<FormaJuridica>) {
+		const formasJuridicas = await this.formaJuridicaRepository.find({
+			...templateSelect,
+		})
+		return formasJuridicas;
+	}
 }

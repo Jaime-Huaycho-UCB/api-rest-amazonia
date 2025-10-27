@@ -10,8 +10,8 @@ export class ActorMunicipal {
     @Column({ name: 'nombre', type: 'varchar', length: 150 })
     nombre: string;
 
-    @Column({ name: 'es_activo', type: 'boolean', default: true })
-    esActivo: boolean;
+    @Column({ name: 'es_propio', type: 'boolean', default: true })
+    esPropio: boolean;
 
     @OneToMany(() => ActorProyecto, (actorProyecto) => actorProyecto.actor)
     ActoresProyectos: ActorProyecto[];

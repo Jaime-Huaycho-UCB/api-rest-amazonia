@@ -1,34 +1,32 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Res } from '@nestjs/common';
 import { EspeciesAnimalesService } from '../services/especies-animales.service';
-import { CreateEspeciesAnimaleDto } from '../dto/create-especies-animale.dto';
-import { UpdateEspeciesAnimaleDto } from '../dto/update-especies-animale.dto';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { FindAllEspeciesAnimalesFormsDto } from '../dto/find-all-especies-animales-forms.dto';
+import { Response } from 'express';
+import { EspecieAnimalFormsTemplate } from '../find-templates';
+import { OkRes } from 'src/shared/utils';
 
+@ApiTags('Especies animales')
 @Controller('especies-animales')
 export class EspeciesAnimalesController {
-  constructor(private readonly especiesAnimalesService: EspeciesAnimalesService) {}
+	constructor(
+		private readonly especiesAnimalesService: EspeciesAnimalesService
+	) { }
 
-  @Post()
-  create(@Body() createEspeciesAnimaleDto: CreateEspeciesAnimaleDto) {
-    return this.especiesAnimalesService.create(createEspeciesAnimaleDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.especiesAnimalesService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.especiesAnimalesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEspeciesAnimaleDto: UpdateEspeciesAnimaleDto) {
-    return this.especiesAnimalesService.update(+id, updateEspeciesAnimaleDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.especiesAnimalesService.remove(+id);
-  }
+	@Get('forms')
+	@ApiOperation({
+		summary: 'Api para obtener la especies animales'
+	})
+	@ApiOkResponse({
+		description: 'Respuesta al obtener las especies animales',
+		type: FindAllEspeciesAnimalesFormsDto
+	})
+	async findAll(
+		@Res() res: Response
+	){
+		const especiesAnimales = await this.especiesAnimalesService.findAll(EspecieAnimalFormsTemplate);
+		return OkRes(res,{
+			especiesAnimales: especiesAnimales
+		})
+	}
 }

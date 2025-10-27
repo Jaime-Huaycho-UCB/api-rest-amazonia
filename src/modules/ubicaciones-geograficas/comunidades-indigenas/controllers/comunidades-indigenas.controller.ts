@@ -2,7 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ComunidadesIndigenasService } from '../services/comunidades-indigenas.service';
 import { CreateComunidadesIndigenaDto } from '../dto/create-comunidades-indigena.dto';
 import { UpdateComunidadesIndigenaDto } from '../dto/update-comunidades-indigena.dto';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController(true)
 @Controller('comunidades-indigenas')
 export class ComunidadesIndigenasController {
   constructor(private readonly comunidadesIndigenasService: ComunidadesIndigenasService) {}

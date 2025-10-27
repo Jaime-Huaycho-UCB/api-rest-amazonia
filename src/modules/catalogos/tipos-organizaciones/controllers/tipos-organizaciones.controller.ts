@@ -1,34 +1,32 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { TiposOrganizacionesService } from '../services/tipos-organizaciones.service';
 import { CreateTiposOrganizacioneDto } from '../dto/create-tipos-organizacione.dto';
 import { UpdateTiposOrganizacioneDto } from '../dto/update-tipos-organizacione.dto';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { FindAllTiposOrganizacionesFormsDto } from '../dto/find-all-tipos-organizaciones-forms.dto';
+import { Response } from 'express';
+import { TipoOrganizacionFormsTemplate } from '../find-templates';
+import { OkRes } from 'src/shared/utils';
 
+@ApiTags('Tipos de organizaciones')
 @Controller('tipos-organizaciones')
 export class TiposOrganizacionesController {
-  constructor(private readonly tiposOrganizacionesService: TiposOrganizacionesService) {}
+	constructor(private readonly tiposOrganizacionesService: TiposOrganizacionesService) { }
 
-  @Post()
-  create(@Body() createTiposOrganizacioneDto: CreateTiposOrganizacioneDto) {
-    return this.tiposOrganizacionesService.create(createTiposOrganizacioneDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.tiposOrganizacionesService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tiposOrganizacionesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTiposOrganizacioneDto: UpdateTiposOrganizacioneDto) {
-    return this.tiposOrganizacionesService.update(+id, updateTiposOrganizacioneDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tiposOrganizacionesService.remove(+id);
-  }
+	@Get('forms')
+	@ApiOperation({
+		summary: 'Api para obtener los tipos de organizacion',
+	})
+	@ApiOkResponse({
+		description: 'Respusta en caso de obtener los tipos de organizaciones',
+		type: FindAllTiposOrganizacionesFormsDto
+	})
+	async findAllForms(
+		@Res() res: Response
+	){
+		const tiposOrganizaciones = await this.tiposOrganizacionesService.findAll(TipoOrganizacionFormsTemplate);
+		return OkRes(res,{
+			tiposOrganizaciones: tiposOrganizaciones
+		})
+	}
 }

@@ -1,34 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { PracticasAgricolasService } from '../services/practicas-agricolas.service';
-import { CreatePracticasAgricolaDto } from '../dto/create-practicas-agricola.dto';
-import { UpdatePracticasAgricolaDto } from '../dto/update-practicas-agricola.dto';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { FindAllPracticasAgricolasFormsDto } from '../dto/find-all-practicas-agricolas-forms.dto';
+import { Response } from 'express';
+import { PracticasAgricolasFormsTemplate } from '../find-templates';
+import { OkRes } from 'src/shared/utils';
 
+@ApiTags('Practicas agricolas')
 @Controller('practicas-agricolas')
 export class PracticasAgricolasController {
-  constructor(private readonly practicasAgricolasService: PracticasAgricolasService) {}
+	constructor(private readonly practicasAgricolasService: PracticasAgricolasService) { }
 
-  @Post()
-  create(@Body() createPracticasAgricolaDto: CreatePracticasAgricolaDto) {
-    return this.practicasAgricolasService.create(createPracticasAgricolaDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.practicasAgricolasService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.practicasAgricolasService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePracticasAgricolaDto: UpdatePracticasAgricolaDto) {
-    return this.practicasAgricolasService.update(+id, updatePracticasAgricolaDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.practicasAgricolasService.remove(+id);
-  }
+	@Get('forms')
+	@ApiOperation({
+		summary: 'Api para obtener la practicas agricolas'
+	})
+	@ApiOkResponse({
+		description: 'Respuesta en caso de obtenre la practica agricolas',
+		type: FindAllPracticasAgricolasFormsDto
+	})
+	async findAllForms(
+		@Res() res: Response
+	){
+		const practicasAgricolas = await this.practicasAgricolasService.findAll(PracticasAgricolasFormsTemplate);
+		return OkRes(res,{
+			practicasAgricolas: practicasAgricolas
+		})
+	}
 }

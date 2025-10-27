@@ -32,6 +32,7 @@ import { AyudasProyectosModule } from './modules/gestion-proyectos/ayudas-proyec
 import { ConservacionAnimalesModule } from './modules/gestion-conservacion/conservacion-animales/conservacion-animales.module';
 import { ConservacionAgricolasModule } from './modules/gestion-conservacion/conservacion-agricolas/conservacion-agricolas.module';
 import { ComunidadesIndigenasAreasModule } from './modules/gestion-comunidades/comunidades-indigenas-areas/comunidades-indigenas-areas.module';
+import { ComunidadesMunicipiosModule } from './modules/ubicaciones-geograficas/comunidades-municipios/comunidades-municipios.module';
 
 @Module({
 	imports: [
@@ -68,6 +69,7 @@ import { ComunidadesIndigenasAreasModule } from './modules/gestion-comunidades/c
 		ConservacionAnimalesModule,
 		ConservacionAgricolasModule,
 		ComunidadesIndigenasAreasModule,
+		ComunidadesMunicipiosModule,
 	],
 })
 export class AppModule { }

@@ -1,34 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { AreasDesarrolloService } from '../services/areas-desarrollo.service';
-import { CreateAreasDesarrolloDto } from '../dto/create-areas-desarrollo.dto';
-import { UpdateAreasDesarrolloDto } from '../dto/update-areas-desarrollo.dto';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
+import { OkRes } from 'src/shared/utils';
+import { FindAllAreaDesarrolloDto } from '../dto/find-all-area-desarrollo.dto';
 
+@ApiTags('Areas de desarrollo indigena')
 @Controller('areas-desarrollo')
 export class AreasDesarrolloController {
-  constructor(private readonly areasDesarrolloService: AreasDesarrolloService) {}
+	constructor(
+		private readonly areasDesarrolloService: AreasDesarrolloService
+	) { }
 
-  @Post()
-  create(@Body() createAreasDesarrolloDto: CreateAreasDesarrolloDto) {
-    return this.areasDesarrolloService.create(createAreasDesarrolloDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.areasDesarrolloService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.areasDesarrolloService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAreasDesarrolloDto: UpdateAreasDesarrolloDto) {
-    return this.areasDesarrolloService.update(+id, updateAreasDesarrolloDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.areasDesarrolloService.remove(+id);
-  }
+	@Get()
+	@ApiOperation({
+		summary: 'Api para obtener las areas de desarrollo'
+	})
+	@ApiOkResponse({
+		description: 'Resputa en caso de obtener las areas de desarrollo',
+		type: FindAllAreaDesarrolloDto
+	})
+	async findAll(
+		@Res() res: Response
+	){
+		const areaDesarrollo = await this.areasDesarrolloService.findAll();
+		return OkRes(res,{
+			areasDesarrollo: areaDesarrollo
+		})
+	}
 }

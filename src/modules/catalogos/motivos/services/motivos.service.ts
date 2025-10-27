@@ -1,26 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { CreateMotivoDto } from '../dto/create-motivo.dto';
-import { UpdateMotivoDto } from '../dto/update-motivo.dto';
+import { CreateMotivoDto } from '../dto/inputs/create-motivo.dto';
+import { UpdateMotivoDto } from '../dto/inputs/update-motivo.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Motivo } from '../entities/motivo.entity';
+import { FindManyOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class MotivosService {
-  create(createMotivoDto: CreateMotivoDto) {
-    return 'This action adds a new motivo';
-  }
+	constructor(
+		@InjectRepository(Motivo)
+		private readonly motivoRepository: Repository<Motivo>
+	){}
 
-  findAll() {
-    return `This action returns all motivos`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} motivo`;
-  }
-
-  update(id: number, updateMotivoDto: UpdateMotivoDto) {
-    return `This action updates a #${id} motivo`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} motivo`;
-  }
+	async findAll(selectTemplate: FindManyOptions<Motivo>): Promise<Motivo[]>{
+		const motivos = await this.motivoRepository.find({
+			...selectTemplate
+		})
+		return motivos
+	}
 }

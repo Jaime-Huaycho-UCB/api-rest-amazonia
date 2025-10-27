@@ -1,26 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { CreateEspeciesAnimaleDto } from '../dto/create-especies-animale.dto';
 import { UpdateEspeciesAnimaleDto } from '../dto/update-especies-animale.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { EspecieAnimal } from '../entities/especie-animal.entity';
+import { FindManyOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class EspeciesAnimalesService {
-  create(createEspeciesAnimaleDto: CreateEspeciesAnimaleDto) {
-    return 'This action adds a new especiesAnimale';
-  }
+	constructor(
+		@InjectRepository(EspecieAnimal)
+		private readonly especieAnimalRepository: Repository<EspecieAnimal>
+	){}
 
-  findAll() {
-    return `This action returns all especiesAnimales`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} especiesAnimale`;
-  }
-
-  update(id: number, updateEspeciesAnimaleDto: UpdateEspeciesAnimaleDto) {
-    return `This action updates a #${id} especiesAnimale`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} especiesAnimale`;
-  }
+	async findAll(selectTemplate: FindManyOptions<EspecieAnimal>){
+		const especiesAnimales = await this.especieAnimalRepository.find({
+			...selectTemplate
+		})
+		return especiesAnimales;
+	}
 }

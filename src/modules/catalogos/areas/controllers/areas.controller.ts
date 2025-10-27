@@ -1,34 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { AreasService } from '../services/areas.service';
-import { CreateAreaDto } from '../dto/create-area.dto';
-import { UpdateAreaDto } from '../dto/update-area.dto';
+import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { Response } from 'express';
+import { OkRes } from 'src/shared/utils';
+import { FindAllAreasDto } from '../dto/find-all-areas.dto';
 
 @Controller('areas')
 export class AreasController {
-  constructor(private readonly areasService: AreasService) {}
+	constructor(
+		private readonly areasService: AreasService
+	) { }
 
-  @Post()
-  create(@Body() createAreaDto: CreateAreaDto) {
-    return this.areasService.create(createAreaDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.areasService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.areasService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAreaDto: UpdateAreaDto) {
-    return this.areasService.update(+id, updateAreaDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.areasService.remove(+id);
-  }
+	@Get()
+	@ApiOperation({
+		summary: 'Api para obtener las areas de desarrollo de proyecto'
+	})
+	@ApiOkResponse({
+		description: 'Respuesta en caso de obtener las areas de proyectos',
+		type: FindAllAreasDto
+	})
+	async findAll(
+		@Res() res: Response
+	){
+		const areas = await this.areasService.findAll();
+		return OkRes(res,{
+			areas: areas
+		})
+	}
 }

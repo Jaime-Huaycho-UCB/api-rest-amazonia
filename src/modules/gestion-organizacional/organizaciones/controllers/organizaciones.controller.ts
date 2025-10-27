@@ -2,7 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { OrganizacionesService } from '../services/organizaciones.service';
 import { CreateOrganizacioneDto } from '../dto/create-organizacione.dto';
 import { UpdateOrganizacioneDto } from '../dto/update-organizacione.dto';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController(true)
 @Controller('organizaciones')
 export class OrganizacionesController {
   constructor(private readonly organizacionesService: OrganizacionesService) {}

@@ -1,26 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { CreateDepartamentoDto } from '../dto/create-departamento.dto';
-import { UpdateDepartamentoDto } from '../dto/update-departamento.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Departamento } from '../entities/departamento.entity';
+import { FindManyOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class DepartamentosService {
-  create(createDepartamentoDto: CreateDepartamentoDto) {
-    return 'This action adds a new departamento';
-  }
+	constructor(
+		@InjectRepository(Departamento)
+		private readonly departamentoRepository: Repository<Departamento>
+	){}
 
-  findAll() {
-    return `This action returns all departamentos`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} departamento`;
-  }
-
-  update(id: number, updateDepartamentoDto: UpdateDepartamentoDto) {
-    return `This action updates a #${id} departamento`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} departamento`;
-  }
+	async findAll(selectTemplate: FindManyOptions<Departamento>){
+		const departamentos = await this.departamentoRepository.find({
+			...selectTemplate,
+		})
+		return departamentos;
+	}
 }

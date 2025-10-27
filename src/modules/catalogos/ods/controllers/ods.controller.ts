@@ -1,34 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { OdsService } from '../services/ods.service';
-import { CreateOdDto } from '../dto/create-od.dto';
-import { UpdateOdDto } from '../dto/update-od.dto';
+import { Response } from 'express';
+import { OkRes } from 'src/shared/utils';
+import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { FindAllOdsDto } from '../dto/find-all-ods.dto';
 
 @Controller('ods')
 export class OdsController {
-  constructor(private readonly odsService: OdsService) {}
+	constructor(
+		private readonly odsService: OdsService
+	) { }
 
-  @Post()
-  create(@Body() createOdDto: CreateOdDto) {
-    return this.odsService.create(createOdDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.odsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.odsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOdDto: UpdateOdDto) {
-    return this.odsService.update(+id, updateOdDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.odsService.remove(+id);
-  }
+	@Get()
+	@ApiOperation({
+		summary: 'Api para obtener los ods'
+	})
+	@ApiOkResponse({
+		description: 'Respuesta en caso de obtener los ods',
+		type: FindAllOdsDto
+	})
+	async findAll(
+		@Res() res: Response
+	){
+		const ods = await this.odsService.findAll();
+		return OkRes(res,{
+			ods: ods
+		})
+	}
 }

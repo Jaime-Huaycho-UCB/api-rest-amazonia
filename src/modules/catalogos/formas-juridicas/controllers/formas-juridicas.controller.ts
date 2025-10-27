@@ -1,34 +1,32 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { FormasJuridicasService } from '../services/formas-juridicas.service';
-import { CreateFormasJuridicaDto } from '../dto/create-formas-juridica.dto';
-import { UpdateFormasJuridicaDto } from '../dto/update-formas-juridica.dto';
+import { Response } from 'express';
+import { OkRes } from 'src/shared/utils';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { FindAllFormasJuridicasFormsDto } from '../dto/outputs/find-all-formas-juridicas-forms.dto';
+import { formaJuridicaFormsTemplate } from '../find-templates';
 
+@ApiTags('Formas Juridicas')
 @Controller('formas-juridicas')
 export class FormasJuridicasController {
-  constructor(private readonly formasJuridicasService: FormasJuridicasService) {}
+	constructor(
+		private readonly formasJuridicasService: FormasJuridicasService
+	) { }
 
-  @Post()
-  create(@Body() createFormasJuridicaDto: CreateFormasJuridicaDto) {
-    return this.formasJuridicasService.create(createFormasJuridicaDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.formasJuridicasService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.formasJuridicasService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFormasJuridicaDto: UpdateFormasJuridicaDto) {
-    return this.formasJuridicasService.update(+id, updateFormasJuridicaDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.formasJuridicasService.remove(+id);
-  }
+	@Get('forms')
+	@ApiOperation({
+		summary: 'Api para obtener las formas juridicas paara el formulario',
+	})
+	@ApiOkResponse({
+		description: 'Repsuesta en caso de obtener las formas juridicas para el formulario',
+		type: FindAllFormasJuridicasFormsDto
+	})
+	async findAllForms(
+		@Res() res: Response
+	){
+		const formasJuridicas = await this.formasJuridicasService.findAll(formaJuridicaFormsTemplate);
+		return OkRes(res,{
+			formasJuridicas: formasJuridicas
+		})
+	}
 }

@@ -1,26 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMunicipioDto } from '../dto/create-municipio.dto';
 import { UpdateMunicipioDto } from '../dto/update-municipio.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Municipio } from '../entities/municipio.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class MunicipiosService {
-  create(createMunicipioDto: CreateMunicipioDto) {
-    return 'This action adds a new municipio';
-  }
+	constructor(
+		@InjectRepository(Municipio)
+		private readonly municipioRepository: Repository<Municipio>
+	){}
 
-  findAll() {
-    return `This action returns all municipios`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} municipio`;
-  }
-
-  update(id: number, updateMunicipioDto: UpdateMunicipioDto) {
-    return `This action updates a #${id} municipio`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} municipio`;
-  }
+	async findAll(){
+		const municipios = await this.municipioRepository.find({
+			select: {
+				id: true,
+				nombre: true
+			}
+		})
+		return municipios;
+	}
 }

@@ -1,26 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTiposOrganizacioneDto } from '../dto/create-tipos-organizacione.dto';
 import { UpdateTiposOrganizacioneDto } from '../dto/update-tipos-organizacione.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { TipoOrganizacion } from '../entities/tipo-organizacion.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TiposOrganizacionesService {
-  create(createTiposOrganizacioneDto: CreateTiposOrganizacioneDto) {
-    return 'This action adds a new tiposOrganizacione';
-  }
+	constructor(
+		@InjectRepository(TipoOrganizacion)
+		private readonly tipoOrganizacionRepository: Repository<TipoOrganizacion> 
+	){}
 
-  findAll() {
-    return `This action returns all tiposOrganizaciones`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} tiposOrganizacione`;
-  }
-
-  update(id: number, updateTiposOrganizacioneDto: UpdateTiposOrganizacioneDto) {
-    return `This action updates a #${id} tiposOrganizacione`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} tiposOrganizacione`;
-  }
+	async findAll(selectTemplate){
+		const tiposOrganizaciones = await this.tipoOrganizacionRepository.find({
+			...selectTemplate
+		})
+		return tiposOrganizaciones;
+	}
 }

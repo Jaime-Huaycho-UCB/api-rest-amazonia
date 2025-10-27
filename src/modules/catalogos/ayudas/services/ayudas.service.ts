@@ -1,26 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAyudaDto } from '../dto/create-ayuda.dto';
 import { UpdateAyudaDto } from '../dto/update-ayuda.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Ayuda } from '../entities/ayuda.entity';
+import { FindManyOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class AyudasService {
-  create(createAyudaDto: CreateAyudaDto) {
-    return 'This action adds a new ayuda';
-  }
+	constructor(
+		@InjectRepository(Ayuda)
+		private readonly ayudaRepository: Repository<Ayuda>
+	){}
 
-  findAll() {
-    return `This action returns all ayudas`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} ayuda`;
-  }
-
-  update(id: number, updateAyudaDto: UpdateAyudaDto) {
-    return `This action updates a #${id} ayuda`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} ayuda`;
-  }
+	async findAll(selectTemplate: FindManyOptions<Ayuda>){
+		const ayuda = await this.ayudaRepository.find({
+			...selectTemplate
+		})
+		return ayuda;
+	}
 }

@@ -1,26 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePracticasAgricolaDto } from '../dto/create-practicas-agricola.dto';
-import { UpdatePracticasAgricolaDto } from '../dto/update-practicas-agricola.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { PracticaAgricola } from '../entities/practica-agricola.entity';
+import { FindManyOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class PracticasAgricolasService {
-  create(createPracticasAgricolaDto: CreatePracticasAgricolaDto) {
-    return 'This action adds a new practicasAgricola';
-  }
+	constructor(
+		@InjectRepository(PracticaAgricola)
+		private readonly practicaAgricolaRepository: Repository<PracticaAgricola>
+	){}
 
-  findAll() {
-    return `This action returns all practicasAgricolas`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} practicasAgricola`;
-  }
-
-  update(id: number, updatePracticasAgricolaDto: UpdatePracticasAgricolaDto) {
-    return `This action updates a #${id} practicasAgricola`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} practicasAgricola`;
-  }
+	async findAll(selectTemplate: FindManyOptions<PracticaAgricola>){
+		const practicasAgricolas = await this.practicaAgricolaRepository.find({
+			...selectTemplate
+		})
+		return practicasAgricolas;
+	}
 }

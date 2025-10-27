@@ -1,34 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { MotivosService } from '../services/motivos.service';
-import { CreateMotivoDto } from '../dto/create-motivo.dto';
-import { UpdateMotivoDto } from '../dto/update-motivo.dto';
+import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { Response } from 'express';
+import { OkRes } from 'src/shared/utils';
+import { motivoFormsTemplate } from '../find-templates';
+import { findAllMotivosFormsDto } from '../dto/outputs/find-all-motivos-forms.dto';
 
 @Controller('motivos')
 export class MotivosController {
-  constructor(private readonly motivosService: MotivosService) {}
+	constructor(
+		private readonly motivosService: MotivosService
+	) { }
 
-  @Post()
-  create(@Body() createMotivoDto: CreateMotivoDto) {
-    return this.motivosService.create(createMotivoDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.motivosService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.motivosService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMotivoDto: UpdateMotivoDto) {
-    return this.motivosService.update(+id, updateMotivoDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.motivosService.remove(+id);
-  }
+	@Get('forms')
+	@ApiOperation({
+		summary: 'Api para obtener motivos de empresa de poyo a la amzonia para el formulario'
+	})
+	@ApiOkResponse({
+		description: 'Respuesta en caso de obtener los motivos',
+		type: findAllMotivosFormsDto
+	})
+	async findAll(
+		@Res() res: Response
+	){
+		const motivos = await this.motivosService.findAll(motivoFormsTemplate);
+		return OkRes(res,{
+			motivos: motivos
+		})
+	}
 }

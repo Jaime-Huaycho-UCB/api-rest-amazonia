@@ -1,26 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOdDto } from '../dto/create-od.dto';
 import { UpdateOdDto } from '../dto/update-od.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Ods } from '../entities/ods.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class OdsService {
-  create(createOdDto: CreateOdDto) {
-    return 'This action adds a new od';
-  }
+	constructor(
+		@InjectRepository(Ods)
+		private readonly odsRepository: Repository<Ods>
+	){}
 
-  findAll() {
-    return `This action returns all ods`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} od`;
-  }
-
-  update(id: number, updateOdDto: UpdateOdDto) {
-    return `This action updates a #${id} od`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} od`;
-  }
+	async findAll(){
+		const ods = await this.odsRepository.find({
+			select: {
+				id: true,
+				nombre: true,
+			}
+		})
+		return ods;
+	}
 }
