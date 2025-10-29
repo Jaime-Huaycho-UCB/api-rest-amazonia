@@ -1,1 +1,4 @@
-export class CreateMotivosEmpresaDto {}
+export class CreateMotivosEmpresaDto {
+    seleccionados?: number[]
+    otros?: string[]
+}

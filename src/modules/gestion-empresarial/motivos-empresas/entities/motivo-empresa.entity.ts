@@ -12,9 +12,9 @@ export class MotivoEmpresa {
 
     @ManyToOne(() => Empresa, (empresa) => empresa.motivosEmpresas)
     @JoinColumn({ name: 'id_empresa' })
-    empresa: Empresa;
+    empresa?: Empresa;
 
     @ManyToOne(() => Motivo, (motivo) => motivo.empresasMotivos)
     @JoinColumn({ name: 'id_motivo' })
-    motivo: Motivo;
+    motivo?: Motivo;
 }

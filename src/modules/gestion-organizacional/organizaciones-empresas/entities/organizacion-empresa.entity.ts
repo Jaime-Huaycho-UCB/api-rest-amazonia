@@ -8,7 +8,7 @@ export class OrganizacionEmpresa {
     id: number;
 
     @Column({ name: 'id_organizacion', type: 'int', nullable: true })
-    idOrganizacion: number;
+    idOrganizacion?: number;
 
     @Column({ name: 'id_empresa', type: 'int' })
     idEmpresa: number;
@@ -18,9 +18,9 @@ export class OrganizacionEmpresa {
 
     @ManyToOne(() => Organizacion, (organizacion) => organizacion.organizacionesEmpresas)
     @JoinColumn({ name: 'id_organizacion' })
-    organizacion: Organizacion;
+    organizacion?: Organizacion;
 
     @ManyToOne(() => Empresa, (empresa) => empresa.organizacionesEmpresas)
     @JoinColumn({ name: 'id_empresa' })
-    empresa: Empresa;
+    empresa?: Empresa;
 }

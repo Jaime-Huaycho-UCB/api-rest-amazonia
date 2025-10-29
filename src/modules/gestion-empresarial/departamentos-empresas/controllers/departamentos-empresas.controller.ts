@@ -9,28 +9,4 @@ import { ApiExcludeController } from '@nestjs/swagger';
 export class DepartamentosEmpresasController {
   constructor(private readonly departamentosEmpresasService: DepartamentosEmpresasService) {}
 
-  @Post()
-  create(@Body() createDepartamentosEmpresaDto: CreateDepartamentosEmpresaDto) {
-    return this.departamentosEmpresasService.create(createDepartamentosEmpresaDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.departamentosEmpresasService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.departamentosEmpresasService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDepartamentosEmpresaDto: UpdateDepartamentosEmpresaDto) {
-    return this.departamentosEmpresasService.update(+id, updateDepartamentosEmpresaDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.departamentosEmpresasService.remove(+id);
-  }
 }

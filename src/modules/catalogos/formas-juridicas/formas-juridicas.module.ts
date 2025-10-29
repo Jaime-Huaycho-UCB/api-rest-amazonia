@@ -10,5 +10,6 @@ import { FormaJuridica } from './entities/forma-juridica.entity';
 	],
 	controllers: [FormasJuridicasController],
 	providers: [FormasJuridicasService],
+	exports: [FormasJuridicasService]
 })
 export class FormasJuridicasModule { }

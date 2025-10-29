@@ -1,26 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOrganizacionesEmpresaDto } from '../dto/create-organizaciones-empresa.dto';
 import { UpdateOrganizacionesEmpresaDto } from '../dto/update-organizaciones-empresa.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { OrganizacionEmpresa } from '../entities/organizacion-empresa.entity';
+import { EntityManager, Repository } from 'typeorm';
 
 @Injectable()
 export class OrganizacionesEmpresasService {
-  create(createOrganizacionesEmpresaDto: CreateOrganizacionesEmpresaDto) {
-    return 'This action adds a new organizacionesEmpresa';
-  }
+	constructor(
+		@InjectRepository(OrganizacionEmpresa)
+		private readonly organizacionEmpresaRepository: Repository<OrganizacionEmpresa>
+	){}
 
-  findAll() {
-    return `This action returns all organizacionesEmpresas`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} organizacionesEmpresa`;
-  }
-
-  update(id: number, updateOrganizacionesEmpresaDto: UpdateOrganizacionesEmpresaDto) {
-    return `This action updates a #${id} organizacionesEmpresa`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} organizacionesEmpresa`;
-  }
+	async create(idEmpresa: number,organizaciones: string[],manager?: EntityManager){
+		const repo = manager ? manager.getRepository(OrganizacionEmpresa) : this.organizacionEmpresaRepository;
+		const toSave = organizaciones.map((o) => ({
+			idEmpresa: idEmpresa,
+			nombre: o
+		}))
+		return repo.save(toSave);
+	}
 }

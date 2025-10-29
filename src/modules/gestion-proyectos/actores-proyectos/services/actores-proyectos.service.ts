@@ -1,26 +1,39 @@
 import { Injectable } from '@nestjs/common';
 import { CreateActoresProyectoDto } from '../dto/create-actores-proyecto.dto';
-import { UpdateActoresProyectoDto } from '../dto/update-actores-proyecto.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ActorProyecto } from '../entities/actor-proyecto.entity';
+import { EntityManager, Repository } from 'typeorm';
+import { ActoresMunicipalesService } from 'src/modules/catalogos/actores-municipales/services/actores-municipales.service';
 
 @Injectable()
 export class ActoresProyectosService {
-  create(createActoresProyectoDto: CreateActoresProyectoDto) {
-    return 'This action adds a new actoresProyecto';
-  }
+	constructor(
+		@InjectRepository(ActorProyecto)
+		private readonly actoreProyectoRepository: Repository<ActorProyecto>,
+		private readonly actoresMunicipalesService: ActoresMunicipalesService
+	){}
 
-  findAll() {
-    return `This action returns all actoresProyectos`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} actoresProyecto`;
-  }
-
-  update(id: number, updateActoresProyectoDto: UpdateActoresProyectoDto) {
-    return `This action updates a #${id} actoresProyecto`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} actoresProyecto`;
-  }
+	async createMany(idProyecto: number,data: CreateActoresProyectoDto,manager?: EntityManager){
+		const repo = manager ? manager.getRepository(ActorProyecto) : this.actoreProyectoRepository;
+		const toSave: ActorProyecto[] = [];
+		if (data.seleccionados){
+			const actores = await this.actoresMunicipalesService.findAllByIds(data.seleccionados);
+			actores.map((a) => {
+				toSave.push({
+					idProyecto: idProyecto,
+					idActor: a.id
+				})
+			})
+		}
+		if (data.otros){
+			const actores = await this.actoresMunicipalesService.createMany(data.otros,manager);
+			actores.map((a) => {
+				toSave.push({
+					idProyecto: idProyecto,
+					idActor: a.id
+				})
+			})
+		}
+		return await repo.save(toSave);
+	}
 }

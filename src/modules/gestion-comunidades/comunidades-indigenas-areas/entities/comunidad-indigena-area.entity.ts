@@ -12,9 +12,9 @@ export class ComunidadIndigenaArea {
 
     @ManyToOne(() => Proyecto, (proyecto) => proyecto.comunidadesIndigenasAreas)
     @JoinColumn({ name: 'id_proyecto' })
-    proyecto: Proyecto;
+    proyecto?: Proyecto;
 
     @ManyToOne(() => AreaDesarrollo, (area) => area.comunidadesIndigenasAreas)
     @JoinColumn({ name: 'id_area' })
-    area: AreaDesarrollo;
+    area?: AreaDesarrollo;
 }

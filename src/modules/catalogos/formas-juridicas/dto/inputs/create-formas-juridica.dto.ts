@@ -1,1 +1,4 @@
-export class CreateFormasJuridicaDto {}
+export class CreateFormasJuridicaDto {
+    id?: number
+    otro?: string
+}

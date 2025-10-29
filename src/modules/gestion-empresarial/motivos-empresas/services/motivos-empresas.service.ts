@@ -1,26 +1,44 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMotivosEmpresaDto } from '../dto/create-motivos-empresa.dto';
 import { UpdateMotivosEmpresaDto } from '../dto/update-motivos-empresa.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { MotivoEmpresa } from '../entities/motivo-empresa.entity';
+import { EntityManager, Repository } from 'typeorm';
+import { MotivosService } from 'src/modules/catalogos/motivos/services/motivos.service';
+import { MyBadRequestException } from 'src/shared/exceptions';
 
 @Injectable()
 export class MotivosEmpresasService {
-  create(createMotivosEmpresaDto: CreateMotivosEmpresaDto) {
-    return 'This action adds a new motivosEmpresa';
-  }
+	constructor(
+		@InjectRepository(MotivoEmpresa)
+		private readonly motivoEmpresaRepository: Repository<MotivoEmpresa>,
+		private readonly motivosService: MotivosService,
+	){}
 
-  findAll() {
-    return `This action returns all motivosEmpresas`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} motivosEmpresa`;
-  }
-
-  update(id: number, updateMotivosEmpresaDto: UpdateMotivosEmpresaDto) {
-    return `This action updates a #${id} motivosEmpresa`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} motivosEmpresa`;
-  }
+	async create(idEmpresa: number,data: CreateMotivosEmpresaDto,manager?: EntityManager){
+		const repo = manager ? manager.getRepository(MotivoEmpresa) : this.motivoEmpresaRepository;
+		const motivosResult: MotivoEmpresa[] = [];
+		if (data.seleccionados && data.seleccionados.length > 0){
+			const motivos = await this.motivosService.findAllByIds(data.seleccionados);
+			motivos.map((m) => {
+				motivosResult.push({
+					idEmpresa: idEmpresa,
+					idMotivo: m.id
+				})
+			})
+		}
+		if (data.otros && data.otros.length > 0){
+			const motivos = await this.motivosService.createMany(data.otros,manager);
+			motivos.map((m) => {
+				motivosResult.push({
+					idEmpresa: idEmpresa,
+					idMotivo: m.id
+				})
+			})
+		}
+		if (motivosResult.length === 0){
+			throw new MyBadRequestException('Se debe de ingresar al menos un tipo de apoyo');
+		}
+		return await repo.save(motivosResult);
+	}
 }

@@ -1,1 +1,4 @@
-export class CreateApoyosEmpresaDto {}
+export class CreateApoyosEmpresaDto {
+    seleccionados?: number[]
+    otros?: string[]
+}

@@ -58,7 +58,7 @@ export class Proyecto {
     @JoinTable({
         name: 'actores_proyectos',
         joinColumn: { name: 'id_proyecto', referencedColumnName: 'id' },
-        inverseJoinColumn: { name: 'id_proyecto', referencedColumnName: 'id' }
+        inverseJoinColumn: { name: 'id_actor', referencedColumnName: 'id' }
     })
     actoresMunicipales: ActorMunicipal[]
 

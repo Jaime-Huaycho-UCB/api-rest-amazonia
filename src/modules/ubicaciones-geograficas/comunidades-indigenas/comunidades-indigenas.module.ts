@@ -10,5 +10,6 @@ import { ComunidadIndigena } from './entities/comunidad-indigena.entity';
 	],
 	controllers: [ComunidadesIndigenasController],
 	providers: [ComunidadesIndigenasService],
+	exports: [ComunidadesIndigenasService]
 })
 export class ComunidadesIndigenasModule { }

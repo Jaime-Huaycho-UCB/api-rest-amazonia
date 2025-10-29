@@ -1,1 +1,4 @@
-export class CreateLocalidadesProyectoDto {}
+export class CreateLocalidadesProyectoDto {
+    idMunicipio: number
+    idComunidadIndigena?: number
+}

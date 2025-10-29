@@ -1,36 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { ProyectosService } from '../services/proyectos.service';
 import { CreateProyectoDto } from '../dto/create-proyecto.dto';
 import { UpdateProyectoDto } from '../dto/update-proyecto.dto';
-import { ApiExcludeController } from '@nestjs/swagger';
+import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
+import { OkRes } from 'src/shared/utils';
 
-@ApiExcludeController(true)
+@ApiTags('Proyectos')
 @Controller('proyectos')
 export class ProyectosController {
-  constructor(private readonly proyectosService: ProyectosService) {}
+	constructor(
+		private readonly proyectosService: ProyectosService
+	) { }
 
-  @Post()
-  create(@Body() createProyectoDto: CreateProyectoDto) {
-    return this.proyectosService.create(createProyectoDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.proyectosService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.proyectosService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProyectoDto: UpdateProyectoDto) {
-    return this.proyectosService.update(+id, updateProyectoDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.proyectosService.remove(+id);
-  }
+	@Get()
+	async findAll(@Res() res: Response){
+		const proyectos = await this.proyectosService.findAll();
+		return OkRes(res,{
+			proyectos: proyectos
+		})
+	}
 }

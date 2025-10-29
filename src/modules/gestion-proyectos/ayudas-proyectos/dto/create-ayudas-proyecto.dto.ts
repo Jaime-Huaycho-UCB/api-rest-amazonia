@@ -1,1 +1,4 @@
-export class CreateAyudasProyectoDto {}
+export class CreateAyudasProyectoDto {
+    seleccionados?: number[]
+    otros?: string[] 
+}

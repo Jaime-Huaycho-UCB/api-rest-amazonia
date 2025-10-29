@@ -19,11 +19,11 @@ export class LocalidadProyecto {
 
     @ManyToOne(() => Proyecto, (proyecto) => proyecto.localidadesProyectos)
     @JoinColumn({ name: 'id_proyecto' })
-    proyecto: Proyecto;
+    proyecto?: Proyecto;
 
     @ManyToOne(() => Municipio, (municipio) => municipio.localidadesProyectos)
     @JoinColumn({ name: 'id_municipio' })
-    municipio: Municipio;
+    municipio?: Municipio;
 
     @ManyToOne(() => ComunidadIndigena, (comunidad) => comunidad.localidadesProyectos)
     @JoinColumn({ name: 'id_comunidad' })

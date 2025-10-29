@@ -1,1 +1,2 @@
-export class CreateProyectosEmpresaDto {}
+export class CreateProyectosEmpresaDto {
+}

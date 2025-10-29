@@ -10,5 +10,6 @@ import { PracticaAgricola } from './entities/practica-agricola.entity';
 	],
 	controllers: [PracticasAgricolasController],
 	providers: [PracticasAgricolasService],
+	exports: [PracticasAgricolasService]
 })
 export class PracticasAgricolasModule { }

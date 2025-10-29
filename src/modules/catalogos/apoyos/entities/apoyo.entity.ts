@@ -14,8 +14,8 @@ export class Apoyo {
     esPropio: boolean;
 
     @OneToMany(() => ApoyoEmpresa, (apoyosEmpresas) => apoyosEmpresas.apoyo)
-    empresasApoyos: ApoyoEmpresa[];
+    empresasApoyos?: ApoyoEmpresa[];
 
     @ManyToMany(() => Empresa,(empresa) => empresa.apoyos)
-    empresas: Empresa[]
+    empresas?: Empresa[]
 }

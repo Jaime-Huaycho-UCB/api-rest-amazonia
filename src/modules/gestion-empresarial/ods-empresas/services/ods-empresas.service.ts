@@ -1,26 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOdsEmpresaDto } from '../dto/create-ods-empresa.dto';
 import { UpdateOdsEmpresaDto } from '../dto/update-ods-empresa.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { OdsEmpresa } from '../entities/ods-empresa.entity';
+import { EntityManager, Repository } from 'typeorm';
+import { OdsService } from 'src/modules/catalogos/ods/services/ods.service';
 
 @Injectable()
 export class OdsEmpresasService {
-  create(createOdsEmpresaDto: CreateOdsEmpresaDto) {
-    return 'This action adds a new odsEmpresa';
-  }
+	constructor(
+		@InjectRepository(OdsEmpresa)
+		private readonly odsEmpresaRepository: Repository<OdsEmpresa>,
+		private readonly odsServices: OdsService,
+	){}
 
-  findAll() {
-    return `This action returns all odsEmpresas`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} odsEmpresa`;
-  }
-
-  update(id: number, updateOdsEmpresaDto: UpdateOdsEmpresaDto) {
-    return `This action updates a #${id} odsEmpresa`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} odsEmpresa`;
-  }
+	async create(idEmpresa: number,ods: number[],manager?: EntityManager){
+		const repo = manager ? manager.getRepository(OdsEmpresa) : this.odsEmpresaRepository;
+		const odss = await this.odsServices.findAllByIds(ods);
+		const odsResult: OdsEmpresa[] = odss.map((o) => ({
+			idEmpresa: idEmpresa,
+			idOds: o.id
+		}));
+		return await repo.save(odsResult);
+	}
 }

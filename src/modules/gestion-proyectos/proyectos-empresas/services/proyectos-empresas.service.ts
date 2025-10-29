@@ -1,26 +1,37 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProyectosEmpresaDto } from '../dto/create-proyectos-empresa.dto';
-import { UpdateProyectosEmpresaDto } from '../dto/update-proyectos-empresa.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ProyectoEmpresa } from '../entities/proyecto-empresa.entity';
+import { EntityManager, Repository } from 'typeorm';
+import { ProyectosService } from '../../proyectos/services/proyectos.service';
+import { CreateProyectoDto } from '../../proyectos/dto/create-proyecto.dto';
+import { parse } from 'date-fns';
 
 @Injectable()
 export class ProyectosEmpresasService {
-  create(createProyectosEmpresaDto: CreateProyectosEmpresaDto) {
-    return 'This action adds a new proyectosEmpresa';
-  }
+	constructor(
+		@InjectRepository(ProyectoEmpresa)
+		private readonly proyectoEmpresaRepository: Repository<ProyectoEmpresa>,
+		private readonly proyectosService: ProyectosService,
+	) { }
 
-  findAll() {
-    return `This action returns all proyectosEmpresas`;
-  }
+	async createMany(idEmpresa: number, proyectos: CreateProyectoDto[], manager: EntityManager) {
+		const repo = manager ? manager.getRepository(ProyectoEmpresa) : this.proyectoEmpresaRepository;
 
-  findOne(id: number) {
-    return `This action returns a #${id} proyectosEmpresa`;
-  }
+		const proyectosSaved: ProyectoEmpresa[] = await Promise.all(
+			proyectos.map(async (p) => {
+				const proyectoSaved = await this.proyectosService.create(p, manager);
 
-  update(id: number, updateProyectosEmpresaDto: UpdateProyectosEmpresaDto) {
-    return `This action updates a #${id} proyectosEmpresa`;
-  }
+				const fechaInicioDate = parse(p.fechaInicio, 'dd-MM-yyyy', new Date());
+				const fechaFinDate = p.fechaFin ? parse(p.fechaFin, 'dd-MM-yyyy', new Date()) : undefined;
 
-  remove(id: number) {
-    return `This action removes a #${id} proyectosEmpresa`;
-  }
+				return {
+					idEmpresa: idEmpresa,
+					idProyecto: proyectoSaved.id,
+					fechaInicio: fechaInicioDate,
+					fechaFin: fechaFinDate
+				} as ProyectoEmpresa;
+			})
+		);
+		return await repo.save(proyectosSaved);
+	}
 }

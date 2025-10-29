@@ -3,7 +3,8 @@ import { CreateOdDto } from '../dto/create-od.dto';
 import { UpdateOdDto } from '../dto/update-od.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Ods } from '../entities/ods.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
+import { MyBadRequestException } from 'src/shared/exceptions';
 
 @Injectable()
 export class OdsService {
@@ -19,6 +20,22 @@ export class OdsService {
 				nombre: true,
 			}
 		})
+		return ods;
+	}
+
+	async findAllByIds(ids: number[]){
+		const ods = await this.odsRepository.find({
+			where: {
+				id: In(ids)
+			},
+			select: {
+				id: true,
+				nombre: true
+			}
+		})
+		if (ods.length !== ids.length){
+			throw new MyBadRequestException('Solo se aceptan ods existentes')
+		}
 		return ods;
 	}
 }

@@ -10,5 +10,6 @@ import { ActorMunicipal } from './entities/actor-municipal.entity';
 	],
 	controllers: [ActoresMunicipalesController],
 	providers: [ActoresMunicipalesService],
+	exports: [ActoresMunicipalesService]
 })
 export class ActoresMunicipalesModule { }

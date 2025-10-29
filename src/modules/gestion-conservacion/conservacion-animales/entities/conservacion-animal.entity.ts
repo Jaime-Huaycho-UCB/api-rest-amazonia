@@ -12,9 +12,9 @@ export class ConservacionAnimal {
 
     @ManyToOne(() => EspecieAnimal, (especie) => especie.conservacionAnimales)
     @JoinColumn({ name: 'id_especie' })
-    especie: EspecieAnimal;
+    especie?: EspecieAnimal;
 
     @ManyToOne(() => Proyecto, (proyecto) => proyecto.conservacionAnimales)
     @JoinColumn({ name: 'id_proyecto' })
-    proyecto: Proyecto;
+    proyecto?: Proyecto;
 }

@@ -10,5 +10,6 @@ import { Ods } from './entities/ods.entity';
 	],
 	controllers: [OdsController],
 	providers: [OdsService],
+	exports: [OdsService]
 })
 export class OdsModule { }

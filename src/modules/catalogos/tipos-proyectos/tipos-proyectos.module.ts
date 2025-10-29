@@ -10,5 +10,6 @@ import { TipoProyecto } from './entities/tipo-proyecto.entity';
 	],
 	controllers: [TiposProyectosController],
 	providers: [TiposProyectosService],
+	exports: [TiposProyectosService],
 })
 export class TiposProyectosModule { }

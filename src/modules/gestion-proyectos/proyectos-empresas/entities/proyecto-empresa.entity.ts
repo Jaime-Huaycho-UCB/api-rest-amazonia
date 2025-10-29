@@ -18,9 +18,9 @@ export class ProyectoEmpresa {
 
     @ManyToOne(() => Empresa, (empresa) => empresa.proyectosEmpresas)
     @JoinColumn({ name: 'id_empresa' })
-    empresa: Empresa;
+    empresa?: Empresa;
 
     @ManyToOne(() => Proyecto, (proyecto) => proyecto.proyectosEmpresas)
     @JoinColumn({ name: 'id_proyecto' })
-    proyecto: Proyecto;
+    proyecto?: Proyecto;
 }

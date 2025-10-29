@@ -1,36 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { EmpresasService } from '../services/empresas.service';
-import { CreateEmpresaDto } from '../dto/create-empresa.dto';
-import { UpdateEmpresaDto } from '../dto/update-empresa.dto';
 import { ApiExcludeController } from '@nestjs/swagger';
+import { Response } from 'express';
+import { OkRes } from 'src/shared/utils';
 
-@ApiExcludeController(true)
 @Controller('empresas')
 export class EmpresasController {
-  constructor(private readonly empresasService: EmpresasService) {}
+	constructor(private readonly empresasService: EmpresasService) { }
 
-  @Post()
-  create(@Body() createEmpresaDto: CreateEmpresaDto) {
-    return this.empresasService.create(createEmpresaDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.empresasService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.empresasService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEmpresaDto: UpdateEmpresaDto) {
-    return this.empresasService.update(+id, updateEmpresaDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.empresasService.remove(+id);
-  }
+	@Get()
+	async create(@Res() res: Response) {
+		const empresas = await this.empresasService.findAll();
+		return OkRes(res,{
+			empresas: empresas
+		})
+	}
 }

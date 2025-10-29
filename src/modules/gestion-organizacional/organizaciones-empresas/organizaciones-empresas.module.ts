@@ -10,5 +10,6 @@ import { OrganizacionEmpresa } from './entities/organizacion-empresa.entity';
 	],
 	controllers: [OrganizacionesEmpresasController],
 	providers: [OrganizacionesEmpresasService],
+	exports: [OrganizacionesEmpresasService]
 })
 export class OrganizacionesEmpresasModule { }

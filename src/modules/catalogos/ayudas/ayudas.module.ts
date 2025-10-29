@@ -10,5 +10,6 @@ import { Ayuda } from './entities/ayuda.entity';
 	],
 	controllers: [AyudasController],
 	providers: [AyudasService],
+	exports: [AyudasService]
 })
 export class AyudasModule { }

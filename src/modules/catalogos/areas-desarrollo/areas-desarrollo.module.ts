@@ -10,5 +10,6 @@ import { AreaDesarrollo } from './entities/area-desarrollo.entity';
 	],
 	controllers: [AreasDesarrolloController],
 	providers: [AreasDesarrolloService],
+	exports: [AreasDesarrolloService]
 })
 export class AreasDesarrolloModule { }

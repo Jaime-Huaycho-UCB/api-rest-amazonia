@@ -3,8 +3,9 @@ import { CreateFormasJuridicaDto } from '../dto/inputs/create-formas-juridica.dt
 import { UpdateFormasJuridicaDto } from '../dto/inputs/update-formas-juridica.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FormaJuridica } from '../entities/forma-juridica.entity';
-import { FindManyOptions, Repository } from 'typeorm';
+import { EntityManager, FindManyOptions, Repository } from 'typeorm';
 import { FormaJuridicaFormsDto } from '../dto/forma-juridica-forms.dto';
+import { MyBadRequestException, MyNotFoundException } from 'src/shared/exceptions';
 
 @Injectable()
 export class FormasJuridicasService {
@@ -22,5 +23,35 @@ export class FormasJuridicasService {
 			...templateSelect,
 		})
 		return formasJuridicas;
+	}
+
+	async findOneOrCreate(data: CreateFormasJuridicaDto,manager?: EntityManager){
+		const repo = manager ? manager.getRepository(FormaJuridica) : this.formaJuridicaRepository;
+		if (data.id){
+			const forma = await this.formaJuridicaRepository.findOne({
+				where: {
+					id: data.id
+				},
+				select: {
+					id: true,
+					nombre: true
+				}
+			})
+			if (!forma) {
+				throw new MyNotFoundException(`No existe la forma juridica con id = ${data.id}`);
+			}
+			return forma
+		}
+		if (data.otro){
+			const forma = new FormaJuridica();
+			forma.nombre = data.otro;
+			forma.esPropio = true;
+			const formaSaved = await repo.save(forma);
+			return {
+				id: formaSaved.id,
+				nombre: formaSaved.nombre
+			}
+		}
+		throw new MyBadRequestException('La empresa deber tener una forma juridica');
 	}
 }

@@ -10,5 +10,6 @@ import { Apoyo } from './entities/apoyo.entity';
 	],
 	controllers: [ApoyosController],
 	providers: [ApoyosService],
+	exports: [ApoyosService]
 })
 export class ApoyosModule { }

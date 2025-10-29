@@ -1,1 +1,4 @@
-export class CreateComunidadesIndigenasAreaDto {}
+export class CreateComunidadesIndigenasAreaDto {
+    seleccionados?: number[]
+    otros?: string[]
+}

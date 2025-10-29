@@ -10,5 +10,6 @@ import { Municipio } from './entities/municipio.entity';
 	],
 	controllers: [MunicipiosController],
 	providers: [MunicipiosService],
+	exports: [MunicipiosService]
 })
 export class MunicipiosModule { }

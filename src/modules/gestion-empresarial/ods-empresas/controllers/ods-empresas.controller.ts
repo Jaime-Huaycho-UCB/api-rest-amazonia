@@ -9,28 +9,4 @@ import { ApiExcludeController } from '@nestjs/swagger';
 export class OdsEmpresasController {
   constructor(private readonly odsEmpresasService: OdsEmpresasService) {}
 
-  @Post()
-  create(@Body() createOdsEmpresaDto: CreateOdsEmpresaDto) {
-    return this.odsEmpresasService.create(createOdsEmpresaDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.odsEmpresasService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.odsEmpresasService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOdsEmpresaDto: UpdateOdsEmpresaDto) {
-    return this.odsEmpresasService.update(+id, updateOdsEmpresaDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.odsEmpresasService.remove(+id);
-  }
 }

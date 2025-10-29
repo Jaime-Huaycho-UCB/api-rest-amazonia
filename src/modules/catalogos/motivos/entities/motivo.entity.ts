@@ -14,8 +14,8 @@ export class Motivo {
     esPropio: boolean;
 
     @OneToMany(() => MotivoEmpresa, (motivosEmpresas) => motivosEmpresas.motivo)
-    empresasMotivos: MotivoEmpresa[];
+    empresasMotivos?: MotivoEmpresa[];
 
     @ManyToMany(() => Empresa,(empresa) => empresa.motivos)
-    empresas: Empresa[]
+    empresas?: Empresa[]
 }

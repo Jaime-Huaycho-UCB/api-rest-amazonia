@@ -3,12 +3,15 @@ import { ApoyosEmpresasService } from './services/apoyos-empresas.service';
 import { ApoyosEmpresasController } from './controllers/apoyos-empresas.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApoyoEmpresa } from './entities/apoyo-empresa.entity';
+import { ApoyosModule } from 'src/modules/catalogos/apoyos/apoyos.module';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([ApoyoEmpresa])
+		TypeOrmModule.forFeature([ApoyoEmpresa]),
+		ApoyosModule,
 	],
 	controllers: [ApoyosEmpresasController],
 	providers: [ApoyosEmpresasService],
+	exports: [ApoyosEmpresasService]
 })
 export class ApoyosEmpresasModule { }

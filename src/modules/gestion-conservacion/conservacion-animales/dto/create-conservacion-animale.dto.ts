@@ -1,1 +1,4 @@
-export class CreateConservacionAnimaleDto {}
+export class CreateConservacionAnimaleDto {
+    seleccionados?: number[]
+    otros?: string[]
+}

@@ -10,5 +10,6 @@ import { Motivo } from './entities/motivo.entity';
 	],
 	controllers: [MotivosController],
 	providers: [MotivosService],
+	exports: [MotivosService]
 })
 export class MotivosModule { }

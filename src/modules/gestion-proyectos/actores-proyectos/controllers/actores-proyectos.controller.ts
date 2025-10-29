@@ -9,28 +9,4 @@ import { ApiExcludeController } from '@nestjs/swagger';
 export class ActoresProyectosController {
   constructor(private readonly actoresProyectosService: ActoresProyectosService) {}
 
-  @Post()
-  create(@Body() createActoresProyectoDto: CreateActoresProyectoDto) {
-    return this.actoresProyectosService.create(createActoresProyectoDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.actoresProyectosService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.actoresProyectosService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateActoresProyectoDto: UpdateActoresProyectoDto) {
-    return this.actoresProyectosService.update(+id, updateActoresProyectoDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.actoresProyectosService.remove(+id);
-  }
 }

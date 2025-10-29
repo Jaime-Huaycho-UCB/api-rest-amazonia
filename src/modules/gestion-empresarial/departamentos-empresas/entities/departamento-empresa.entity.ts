@@ -12,9 +12,9 @@ export class DepartamentoEmpresa {
 
     @ManyToOne(() => Departamento, (departamento) => departamento.departamentosEmpresas)
     @JoinColumn({ name: 'id_departamento' })
-    departamento: Departamento;
+    departamento?: Departamento;
 
     @ManyToOne(() => Empresa, (empresa) => empresa.departamentosEmpresas)
     @JoinColumn({ name: 'id_empresa' })
-    empresa: Empresa;
+    empresa?: Empresa;
 }
