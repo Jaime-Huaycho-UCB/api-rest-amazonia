@@ -12,16 +12,16 @@ export class Organizacion {
     @Column({ type: 'varchar', length: 100 })
     nombre: string;
 
-    @Column({ name: 'id_tipo' })
+    @Column({ name: 'id_tipo', type: 'int' })
     idTipo: number;
 
-    @Column({ name: 'id_departamento' })
+    @Column({ name: 'id_departamento', type: 'int'})
     idDepartamento: number;
 
-    @Column({ type: 'boolean' })
+    @Column({ name: 'es_nacional', type: 'boolean' })
     esNacional: boolean;
 
-    @Column({ type: 'int' })
+    @Column({ name: 'anio_inicio_trabajo', type: 'int' })
     anioInicioTrabajo: number;
 
     @ManyToOne(() => TipoOrganizacion, (tipo) => tipo.organizaciones)

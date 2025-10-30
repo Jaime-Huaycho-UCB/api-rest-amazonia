@@ -1,26 +1,37 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProyectosOrganizacioneDto } from '../dto/create-proyectos-organizacione.dto';
-import { UpdateProyectosOrganizacioneDto } from '../dto/update-proyectos-organizacione.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ProyectoOrganizacion } from '../entities/proyecto-organizacion.entity';
+import { EntityManager, Repository } from 'typeorm';
+import { CreateProyectoDto } from '../../proyectos/dto/create-proyecto.dto';
+import { ProyectosService } from '../../proyectos/services/proyectos.service';
+import { parse } from 'date-fns';
 
 @Injectable()
 export class ProyectosOrganizacionesService {
-  create(createProyectosOrganizacioneDto: CreateProyectosOrganizacioneDto) {
-    return 'This action adds a new proyectosOrganizacione';
-  }
+	constructor(
+		@InjectRepository(ProyectoOrganizacion)
+		private readonly proyectoOrganizacionRepository: Repository<ProyectoOrganizacion>,
+		private readonly proyectosService: ProyectosService,
+	) { }
 
-  findAll() {
-    return `This action returns all proyectosOrganizaciones`;
-  }
+	async createMany(idOrganizacion: number, proyectos: CreateProyectoDto[], manager: EntityManager) {
+		const repo = manager ? manager.getRepository(ProyectoOrganizacion) : this.proyectoOrganizacionRepository;
 
-  findOne(id: number) {
-    return `This action returns a #${id} proyectosOrganizacione`;
-  }
+		const proyectosSaved: ProyectoOrganizacion[] = await Promise.all(
+			proyectos.map(async (p) => {
+				const proyectoSaved = await this.proyectosService.create(p, manager);
 
-  update(id: number, updateProyectosOrganizacioneDto: UpdateProyectosOrganizacioneDto) {
-    return `This action updates a #${id} proyectosOrganizacione`;
-  }
+				const fechaInicioDate = parse(p.fechaInicio, 'dd-MM-yyyy', new Date());
+				const fechaFinDate = p.fechaFin ? parse(p.fechaFin, 'dd-MM-yyyy', new Date()) : undefined;
 
-  remove(id: number) {
-    return `This action removes a #${id} proyectosOrganizacione`;
-  }
+				return {
+					idOrganizacion: idOrganizacion,
+					idProyecto: proyectoSaved.id,
+					fechaInicio: fechaInicioDate,
+					fechaFin: fechaFinDate
+				} as ProyectoOrganizacion;
+			})
+		);
+		return await repo.save(proyectosSaved);
+	}
 }

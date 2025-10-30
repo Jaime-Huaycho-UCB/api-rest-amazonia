@@ -1,1 +1,4 @@
-export class CreateTiposOrganizacioneDto {}
+export class CreateTiposOrganizacioneDto {
+    id?: number
+    otro?: string
+}

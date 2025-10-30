@@ -89,10 +89,10 @@ export class RegisterProyectosDto {
     @Type(() => RegisterActoresDto)
     actores: RegisterActoresDto
 
-    @ApiProperty({ description: 'Área del proyecto', enum: ['desarrollo', 'conservacion'] })
+    @ApiProperty({ description: 'Área del proyecto', enum: [AreasEnum.conservacion | AreasEnum.desarrollo] })
     @IsDefined({ message: 'proyecto.area es obligatorio' })
     @IsInt()
-    @IsIn([AreasEnum.conservacion, AreasEnum.desarrollo], { message: 'proyecto.area debe ser "desarrollo" o "conservacion"' })
+    @IsIn([AreasEnum.conservacion, AreasEnum.desarrollo], { message: `proyecto.area debe ser: 2 = "desarrollo" o 1 = "conservacion"` })
     area: AreasEnum.conservacion | AreasEnum.desarrollo
 
     @ApiProperty({ description: 'Datos de conservación (solo si area=conservacion)', type: RegisterConservacionDto, nullable: true })

@@ -11,16 +11,16 @@ export class ProyectoOrganizacion {
     idOrganizacion: number;
 
     @Column({ type: 'date', name: 'fecha_inicio' })
-    fechaInicio: string;
+    fechaInicio: Date;
 
     @Column({ type: 'date', name: 'fecha_fin', nullable: true })
-    fechaFin?: string;
+    fechaFin?: Date;
 
     @ManyToOne(() => Proyecto, (proyecto) => proyecto.proyectosOrganizaciones, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'id_proyecto' })
-    proyecto: Proyecto;
+    proyecto?: Proyecto;
 
     @ManyToOne(() => Organizacion, (organizacion) => organizacion.proyectosOrganizaciones, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'id_organizacion' })
-    organizacion: Organizacion;
+    organizacion?: Organizacion;
 }

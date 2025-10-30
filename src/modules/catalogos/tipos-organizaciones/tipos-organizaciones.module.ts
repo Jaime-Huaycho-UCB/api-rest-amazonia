@@ -10,5 +10,6 @@ import { TipoOrganizacion } from './entities/tipo-organizacion.entity';
 	],
 	controllers: [TiposOrganizacionesController],
 	providers: [TiposOrganizacionesService],
+	exports: [TiposOrganizacionesService]
 })
 export class TiposOrganizacionesModule { }

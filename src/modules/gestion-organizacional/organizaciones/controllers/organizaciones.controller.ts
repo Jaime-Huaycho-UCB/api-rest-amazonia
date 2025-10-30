@@ -1,36 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { OrganizacionesService } from '../services/organizaciones.service';
 import { CreateOrganizacioneDto } from '../dto/create-organizacione.dto';
 import { UpdateOrganizacioneDto } from '../dto/update-organizacione.dto';
-import { ApiExcludeController } from '@nestjs/swagger';
+import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
+import { OkRes } from 'src/shared/utils';
 
-@ApiExcludeController(true)
+@ApiTags('Organizaciones')
 @Controller('organizaciones')
 export class OrganizacionesController {
-  constructor(private readonly organizacionesService: OrganizacionesService) {}
+	constructor(private readonly organizacionesService: OrganizacionesService) { }
 
-  @Post()
-  create(@Body() createOrganizacioneDto: CreateOrganizacioneDto) {
-    return this.organizacionesService.create(createOrganizacioneDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.organizacionesService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.organizacionesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrganizacioneDto: UpdateOrganizacioneDto) {
-    return this.organizacionesService.update(+id, updateOrganizacioneDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.organizacionesService.remove(+id);
-  }
+	@Get()
+	async findAll(@Res() res: Response){
+		const organizaciones = await this.organizacionesService.findAll();
+		return OkRes(res,{
+			organizaciones: organizaciones
+		})
+	}
 }

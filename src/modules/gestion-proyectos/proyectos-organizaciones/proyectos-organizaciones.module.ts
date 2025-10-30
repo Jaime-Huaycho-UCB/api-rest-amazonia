@@ -3,12 +3,15 @@ import { ProyectosOrganizacionesService } from './services/proyectos-organizacio
 import { ProyectosOrganizacionesController } from './controllers/proyectos-organizaciones.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProyectoOrganizacion } from './entities/proyecto-organizacion.entity';
+import { ProyectosModule } from '../proyectos/proyectos.module';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([ProyectoOrganizacion])
+		TypeOrmModule.forFeature([ProyectoOrganizacion]),
+		ProyectosModule
 	],
 	controllers: [ProyectosOrganizacionesController],
 	providers: [ProyectosOrganizacionesService],
+	exports: [ProyectosOrganizacionesService]
 })
 export class ProyectosOrganizacionesModule { }

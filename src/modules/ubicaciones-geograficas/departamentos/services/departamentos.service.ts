@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Departamento } from '../entities/departamento.entity';
 import { FindManyOptions, In, Repository } from 'typeorm';
-import { MyBadRequestException } from 'src/shared/exceptions';
+import { MyBadRequestException, MyNotFoundException } from 'src/shared/exceptions';
 
 @Injectable()
 export class DepartamentosService {
@@ -30,4 +30,15 @@ export class DepartamentosService {
 		return departamentos;
 	}
 
+	async findOne(idDepartamento: number){
+		const departamento = await this.departamentoRepository.findOne({
+			where: {
+				id: idDepartamento
+			}
+		})
+		if (!departamento){
+			throw new MyNotFoundException('EL daprtamento ingresado para al organizacion no es valido');
+		}
+		return departamento;
+	}
 }
