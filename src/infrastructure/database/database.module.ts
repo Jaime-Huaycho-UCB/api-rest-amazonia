@@ -3,6 +3,10 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MyConfigModule } from '../config/config.module';
 import { MyDataBaseConfig } from '../config/services/database.config';
+import { MetricsQueryLogger } from 'src/load-testing/typeorm-query-logger';
+
+const isLoadTestMode =
+  process.env.NODE_ENV !== 'production' || process.env.ENABLE_LOAD_TEST === 'true';
 
 @Module({
     imports: [
@@ -20,7 +24,8 @@ import { MyDataBaseConfig } from '../config/services/database.config';
                     database: dbConfig.database ?? undefined,
                     autoLoadEntities: true,
                     synchronize: false,
-                    logging: dbConfig.logging ?? false,
+                    logging: isLoadTestMode ? ['query'] : (dbConfig.logging ?? false),
+                    logger: isLoadTestMode ? new MetricsQueryLogger() : undefined,
                 };
             },
         }),

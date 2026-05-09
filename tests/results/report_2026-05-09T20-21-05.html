@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Load Test Report — Amazonia</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 980px; margin: 0 auto; padding: 24px 16px; color: #222; background: #fafafa; }
+  h1   { border-bottom: 3px solid #333; padding-bottom: 10px; margin-bottom: 6px; }
+  h2   { font-size: 1rem; }
+  h3   { margin: 18px 0 8px; font-size: .95rem; color: #444; }
+  p.ts { color: #888; font-size: .82rem; margin-bottom: 28px; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 6px; font-size: .88rem; }
+  th, td { border: 1px solid #ddd; padding: 7px 11px; text-align: left; }
+  th   { background: #ececec; font-weight: 600; }
+  tr:nth-child(even) td { background: rgba(0,0,0,.025); }
+  code { font-family: monospace; font-size: .9em; background:#eee; padding:1px 4px; border-radius:3px; }
+  .summary td:first-child { font-weight: 600; color: #555; width: 160px; }
+  .totals { background: #fff; border: 1px solid #ddd; border-radius: 8px;
+            padding: 18px 20px; margin-bottom: 32px; }
+  .totals h2 { margin-top: 0; color: #333; }
+</style>
+</head>
+<body>
+<h1>Load Test Report — Amazonia API</h1>
+<p class="ts">Generated: 2026-05-09T20:21:05.401Z</p>
+
+<div class="totals">
+  <h2>Global Totals</h2>
+  <table class="summary" style="width:auto;min-width:300px;">
+    <tr><td>Scenarios Run</td>   <td><b>3</b></td></tr>
+    <tr><td>Total Requests</td>  <td><b>6791</b></td></tr>
+    <tr><td>Total DB Queries</td><td><b>0</b></td></tr>
+    <tr><td>Avg Error Rate</td>  <td><b>0.00 %</b></td></tr>
+  </table>
+</div>
+
+
+  <section style="margin-bottom:36px;border:2px solid #2e7d32;border-radius:8px;overflow:hidden;">
+    <h2 style="margin:0;padding:14px 20px;background:#2e7d32;color:#fff;font-size:1.2rem;letter-spacing:.5px;">
+      Scenario: LOW
+    </h2>
+    <div style="background:#e8f5e9;padding:20px;">
+
+      <table class="summary">
+        <tr><td>Duration</td>        <td><b>15.73 s</b></td></tr>
+        <tr><td>Total Requests</td>  <td><b>37</b></td></tr>
+        <tr><td>RPS</td>             <td><b>2.35</b></td></tr>
+        <tr><td>Avg Latency</td>     <td><b>0.90 ms</b></td></tr>
+        <tr><td>Min Latency</td>     <td><b>0.22 ms</b></td></tr>
+        <tr><td>Max Latency</td>     <td><b>5.82 ms</b></td></tr>
+        <tr><td>BW In</td>           <td><b>0.00 KB/s &nbsp;(0.03 KB total)</b></td></tr>
+        <tr><td>BW Out</td>          <td><b>0.98 KB/s &nbsp;(15.40 KB total)</b></td></tr>
+        <tr><td>Avg Heap</td>        <td><b>40.12 MB</b></td></tr>
+        <tr><td>DB Queries</td>      <td><b>0</b></td></tr>
+        <tr><td>Error Rate</td>      <td><b style="color:#2e7d32">0.00 %</b></td></tr>
+      </table>
+
+      <h3>Status Codes</h3>
+      <table style="width:auto;">
+        <thead><tr><th>Status</th><th>Count</th></tr></thead>
+        <tbody><tr><td style="color:#2e7d32;font-weight:600">200</td><td>37</td></tr></tbody>
+      </table>
+
+      <h3>Endpoints</h3>
+      <table>
+        <thead>
+          <tr><th>Endpoint</th><th>Requests</th><th>Avg Latency</th><th>Min</th><th>Max</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>GET /api/health</code></td>
+            <td>19</td>
+            <td>0.61 ms</td>
+            <td>0.22 ms</td>
+            <td>1.03 ms</td>
+          </tr>
+          <tr>
+            <td><code>GET /api/metrics</code></td>
+            <td>17</td>
+            <td>0.94 ms</td>
+            <td>0.22 ms</td>
+            <td>3.63 ms</td>
+          </tr>
+          <tr>
+            <td><code>POST /api/metrics/scenario</code></td>
+            <td>1</td>
+            <td>5.82 ms</td>
+            <td>5.82 ms</td>
+            <td>5.82 ms</td>
+          </tr></tbody>
+      </table>
+    </div>
+  </section>
+  <section style="margin-bottom:36px;border:2px solid #f57f17;border-radius:8px;overflow:hidden;">
+    <h2 style="margin:0;padding:14px 20px;background:#f57f17;color:#fff;font-size:1.2rem;letter-spacing:.5px;">
+      Scenario: AVG
+    </h2>
+    <div style="background:#fff8e1;padding:20px;">
+
+      <table class="summary">
+        <tr><td>Duration</td>        <td><b>20.43 s</b></td></tr>
+        <tr><td>Total Requests</td>  <td><b>466</b></td></tr>
+        <tr><td>RPS</td>             <td><b>22.81</b></td></tr>
+        <tr><td>Avg Latency</td>     <td><b>0.63 ms</b></td></tr>
+        <tr><td>Min Latency</td>     <td><b>0.13 ms</b></td></tr>
+        <tr><td>Max Latency</td>     <td><b>1.18 ms</b></td></tr>
+        <tr><td>BW In</td>           <td><b>0.00 KB/s &nbsp;(0.03 KB total)</b></td></tr>
+        <tr><td>BW Out</td>          <td><b>21.10 KB/s &nbsp;(431.01 KB total)</b></td></tr>
+        <tr><td>Avg Heap</td>        <td><b>42.24 MB</b></td></tr>
+        <tr><td>DB Queries</td>      <td><b>0</b></td></tr>
+        <tr><td>Error Rate</td>      <td><b style="color:#2e7d32">0.00 %</b></td></tr>
+      </table>
+
+      <h3>Status Codes</h3>
+      <table style="width:auto;">
+        <thead><tr><th>Status</th><th>Count</th></tr></thead>
+        <tbody><tr><td style="color:#2e7d32;font-weight:600">200</td><td>466</td></tr></tbody>
+      </table>
+
+      <h3>Endpoints</h3>
+      <table>
+        <thead>
+          <tr><th>Endpoint</th><th>Requests</th><th>Avg Latency</th><th>Min</th><th>Max</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>GET /api/metrics</code></td>
+            <td>248</td>
+            <td>0.75 ms</td>
+            <td>0.30 ms</td>
+            <td>1.18 ms</td>
+          </tr>
+          <tr>
+            <td><code>GET /api/health</code></td>
+            <td>217</td>
+            <td>0.48 ms</td>
+            <td>0.13 ms</td>
+            <td>0.83 ms</td>
+          </tr>
+          <tr>
+            <td><code>POST /api/metrics/scenario</code></td>
+            <td>1</td>
+            <td>1.11 ms</td>
+            <td>1.11 ms</td>
+            <td>1.11 ms</td>
+          </tr></tbody>
+      </table>
+    </div>
+  </section>
+  <section style="margin-bottom:36px;border:2px solid #c62828;border-radius:8px;overflow:hidden;">
+    <h2 style="margin:0;padding:14px 20px;background:#c62828;color:#fff;font-size:1.2rem;letter-spacing:.5px;">
+      Scenario: PEAK
+    </h2>
+    <div style="background:#fdecea;padding:20px;">
+
+      <table class="summary">
+        <tr><td>Duration</td>        <td><b>15.12 s</b></td></tr>
+        <tr><td>Total Requests</td>  <td><b>6288</b></td></tr>
+        <tr><td>RPS</td>             <td><b>416.00</b></td></tr>
+        <tr><td>Avg Latency</td>     <td><b>1.03 ms</b></td></tr>
+        <tr><td>Min Latency</td>     <td><b>0.08 ms</b></td></tr>
+        <tr><td>Max Latency</td>     <td><b>6.46 ms</b></td></tr>
+        <tr><td>BW In</td>           <td><b>0.00 KB/s &nbsp;(0.03 KB total)</b></td></tr>
+        <tr><td>BW Out</td>          <td><b>539.66 KB/s &nbsp;(8157.16 KB total)</b></td></tr>
+        <tr><td>Avg Heap</td>        <td><b>53.94 MB</b></td></tr>
+        <tr><td>DB Queries</td>      <td><b>0</b></td></tr>
+        <tr><td>Error Rate</td>      <td><b style="color:#2e7d32">0.00 %</b></td></tr>
+      </table>
+
+      <h3>Status Codes</h3>
+      <table style="width:auto;">
+        <thead><tr><th>Status</th><th>Count</th></tr></thead>
+        <tbody><tr><td style="color:#2e7d32;font-weight:600">200</td><td>6288</td></tr></tbody>
+      </table>
+
+      <h3>Endpoints</h3>
+      <table>
+        <thead>
+          <tr><th>Endpoint</th><th>Requests</th><th>Avg Latency</th><th>Min</th><th>Max</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>GET /api/metrics</code></td>
+            <td>3145</td>
+            <td>1.81 ms</td>
+            <td>0.26 ms</td>
+            <td>6.46 ms</td>
+          </tr>
+          <tr>
+            <td><code>GET /api/health</code></td>
+            <td>3142</td>
+            <td>0.25 ms</td>
+            <td>0.08 ms</td>
+            <td>1.06 ms</td>
+          </tr>
+          <tr>
+            <td><code>POST /api/metrics/scenario</code></td>
+            <td>1</td>
+            <td>0.71 ms</td>
+            <td>0.71 ms</td>
+            <td>0.71 ms</td>
+          </tr></tbody>
+      </table>
+    </div>
+  </section>
+</body>
+</html>

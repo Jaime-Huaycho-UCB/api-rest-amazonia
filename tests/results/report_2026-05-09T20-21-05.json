@@ -1,0 +1,152 @@
+{
+  "low": {
+    "name": "low",
+    "durationSeconds": 15.7337906,
+    "totalRequests": 37,
+    "rps": 2.351626568615957,
+    "bandwidthIn": {
+      "totalKB": 0.029296875,
+      "kbps": 0.0018620353953356923
+    },
+    "bandwidthOut": {
+      "totalKB": 15.404296875,
+      "kbps": 0.979058210867507
+    },
+    "latency": {
+      "avgMs": 0.8995945945946399,
+      "minMs": 0.2157999999981257,
+      "maxMs": 5.8233000000000175
+    },
+    "memory": {
+      "avgHeapMB": 40.1220418569204
+    },
+    "queryCount": 0,
+    "statusCodes": {
+      "200": 37
+    },
+    "errorRate": 0,
+    "endpoints": [
+      {
+        "endpoint": "POST /api/metrics/scenario",
+        "count": 1,
+        "avgLatency": 5.8233000000000175,
+        "minLatency": 5.8233000000000175,
+        "maxLatency": 5.8233000000000175
+      },
+      {
+        "endpoint": "GET /api/metrics",
+        "count": 17,
+        "avgLatency": 0.9351647058822837,
+        "minLatency": 0.2173000000002503,
+        "maxLatency": 3.625500000001921
+      },
+      {
+        "endpoint": "GET /api/health",
+        "count": 19,
+        "avgLatency": 0.6086263157896227,
+        "minLatency": 0.2157999999981257,
+        "maxLatency": 1.0293000000001484
+      }
+    ]
+  },
+  "avg": {
+    "name": "avg",
+    "durationSeconds": 20.4254139,
+    "totalRequests": 466,
+    "rps": 22.814715152479728,
+    "bandwidthIn": {
+      "totalKB": 0.029296875,
+      "kbps": 0.0014343344591905675
+    },
+    "bandwidthOut": {
+      "totalKB": 431.0126953125,
+      "kbps": 21.101785130165712
+    },
+    "latency": {
+      "avgMs": 0.6266671673819368,
+      "minMs": 0.1316999999980908,
+      "maxMs": 1.1757999999972526
+    },
+    "memory": {
+      "avgHeapMB": 42.23533607450166
+    },
+    "queryCount": 0,
+    "statusCodes": {
+      "200": 466
+    },
+    "errorRate": 0,
+    "endpoints": [
+      {
+        "endpoint": "POST /api/metrics/scenario",
+        "count": 1,
+        "avgLatency": 1.1077000000004773,
+        "minLatency": 1.1077000000004773,
+        "maxLatency": 1.1077000000004773
+      },
+      {
+        "endpoint": "GET /api/health",
+        "count": 217,
+        "avgLatency": 0.4778129032256821,
+        "minLatency": 0.1316999999980908,
+        "maxLatency": 0.8289999999979045
+      },
+      {
+        "endpoint": "GET /api/metrics",
+        "count": 248,
+        "avgLatency": 0.7549750000000366,
+        "minLatency": 0.2970000000059372,
+        "maxLatency": 1.1757999999972526
+      }
+    ]
+  },
+  "peak": {
+    "name": "peak",
+    "durationSeconds": 15.115340700000008,
+    "totalRequests": 6288,
+    "rps": 416.001208626412,
+    "bandwidthIn": {
+      "totalKB": 0.0302734375,
+      "kbps": 0.0020028286560553666
+    },
+    "bandwidthOut": {
+      "totalKB": 8157.162109375,
+      "kbps": 539.6611476561025
+    },
+    "latency": {
+      "avgMs": 1.0277927958015887,
+      "minMs": 0.0783000000010361,
+      "maxMs": 6.461999999999534
+    },
+    "memory": {
+      "avgHeapMB": 53.94102953165845
+    },
+    "queryCount": 0,
+    "statusCodes": {
+      "200": 6288
+    },
+    "errorRate": 0,
+    "endpoints": [
+      {
+        "endpoint": "POST /api/metrics/scenario",
+        "count": 1,
+        "avgLatency": 0.714799999994284,
+        "minLatency": 0.714799999994284,
+        "maxLatency": 0.714799999994284
+      },
+      {
+        "endpoint": "GET /api/metrics",
+        "count": 3145,
+        "avgLatency": 1.805013100159116,
+        "minLatency": 0.26129999999830034,
+        "maxLatency": 6.461999999999534
+      },
+      {
+        "endpoint": "GET /api/health",
+        "count": 3142,
+        "avgLatency": 0.24993001273073662,
+        "minLatency": 0.0783000000010361,
+        "maxLatency": 1.0630999999993946
+      }
+    ]
+  }
+}
