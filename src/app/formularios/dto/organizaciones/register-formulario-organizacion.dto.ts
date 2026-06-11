@@ -1,6 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDefined, IsInt, IsNotEmpty, IsString, Length, Min, IsBoolean, ValidateNested, IsOptional, IsArray } from "class-validator";
+import { IsDefined, IsInt, IsNotEmpty, IsString, Length, Min, IsBoolean, ValidateNested, IsOptional, IsArray, ArrayMinSize } from "class-validator";
 import { RegisterProyectosDto } from "../proyectos/register-proyectos.dto";
+import { LinkProyectoDto } from "../proyectos/link-proyecto.dto";
+import { Type } from "class-transformer";
 
 export class RegisterTipoDto {
     @ApiProperty({
@@ -83,5 +85,18 @@ export class RegisterFormularioOrganizacionDto {
     @IsOptional()
     @IsArray({ message: 'organizacion.proyectos debe ser un array' })
     @ValidateNested({ each: true })
+    @Type(() => RegisterProyectosDto)
     proyectos?: RegisterProyectosDto[]
+
+    @ApiProperty({
+        description: 'Proyectos existentes a los que se vincula la organización (sin crear nuevos)',
+        type: [LinkProyectoDto],
+        nullable: true
+    })
+    @IsOptional()
+    @IsArray({ message: 'organizacion.proyectosExistentes debe ser un array' })
+    @ArrayMinSize(1, { message: 'organizacion.proyectosExistentes debe tener al menos 1 elemento si se envía' })
+    @ValidateNested({ each: true, message: 'organizacion.proyectosExistentes contiene errores internos' })
+    @Type(() => LinkProyectoDto)
+    proyectosExistentes?: LinkProyectoDto[]
 }

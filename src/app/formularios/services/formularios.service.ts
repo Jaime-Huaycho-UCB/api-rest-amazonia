@@ -21,7 +21,10 @@ export class FormulariosService {
         return this.dataSource.transaction(async (manager) => {
             const empresa = await this.empresasService.create(data,manager);
             if (data.proyectos){
-                const proyectosEmpresas = await this.proyectosEmpresasService.createMany(empresa.id,data.proyectos,manager)
+                await this.proyectosEmpresasService.createMany(empresa.id,data.proyectos,manager);
+            }
+            if (data.proyectosExistentes){
+                await this.proyectosEmpresasService.linkMany(empresa.id,data.proyectosExistentes,manager);
             }
             return empresa;
         })
@@ -31,7 +34,10 @@ export class FormulariosService {
         return this.dataSource.transaction(async (manager) => {
             const organizacion = await this.organizacionesService.create(data,manager);
             if (data.proyectos){
-                const proyectosEmpresas = await this.proyectosOrganizacionesServices.createMany(organizacion.id,data.proyectos,manager)
+                await this.proyectosOrganizacionesServices.createMany(organizacion.id,data.proyectos,manager);
+            }
+            if (data.proyectosExistentes){
+                await this.proyectosOrganizacionesServices.linkMany(organizacion.id,data.proyectosExistentes,manager);
             }
             return organizacion;
         })

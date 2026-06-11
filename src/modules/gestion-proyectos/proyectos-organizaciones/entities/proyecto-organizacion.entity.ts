@@ -1,13 +1,16 @@
 import { Organizacion } from "src/modules/gestion-organizacional/organizaciones/entities/organizacion.entity";
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
 import { Proyecto } from "../../proyectos/entities/proyecto.entity";
 
 @Entity('proyectos_organizaciones')
 export class ProyectoOrganizacion {
-    @PrimaryColumn({ name: 'id_proyecto' })
+    @PrimaryGeneratedColumn({ name: 'id_participacion', type: 'int' })
+    idParticipacion: number;
+
+    @Column({ name: 'id_proyecto', type: 'int', nullable: false })
     idProyecto: number;
 
-    @PrimaryColumn({ name: 'id_organizacion' })
+    @Column({ name: 'id_organizacion', type: 'int', nullable: false })
     idOrganizacion: number;
 
     @Column({ type: 'date', name: 'fecha_inicio' })

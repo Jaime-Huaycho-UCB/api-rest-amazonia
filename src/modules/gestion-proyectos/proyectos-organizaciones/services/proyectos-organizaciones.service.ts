@@ -5,6 +5,9 @@ import { EntityManager, Repository } from 'typeorm';
 import { CreateProyectoDto } from '../../proyectos/dto/create-proyecto.dto';
 import { ProyectosService } from '../../proyectos/services/proyectos.service';
 import { parse } from 'date-fns';
+import { LinkProyectoDto } from 'src/app/formularios/dto/proyectos/link-proyecto.dto';
+import { Proyecto } from '../../proyectos/entities/proyecto.entity';
+import { MyNotFoundException } from 'src/shared/exceptions';
 
 @Injectable()
 export class ProyectosOrganizacionesService {
@@ -33,5 +36,30 @@ export class ProyectosOrganizacionesService {
 			})
 		);
 		return await repo.save(proyectosSaved);
+	}
+
+	async linkMany(idOrganizacion: number, links: LinkProyectoDto[], manager: EntityManager) {
+		const repo = manager ? manager.getRepository(ProyectoOrganizacion) : this.proyectoOrganizacionRepository;
+		const proyectoRepo = manager.getRepository(Proyecto);
+
+		const records: ProyectoOrganizacion[] = await Promise.all(
+			links.map(async (link) => {
+				const exists = await proyectoRepo.findOne({ where: { id: link.idProyecto } });
+				if (!exists) {
+					throw new MyNotFoundException(`Proyecto con id ${link.idProyecto} no encontrado`);
+				}
+
+				const fechaInicioDate = parse(link.fechaInicio, 'dd-MM-yyyy', new Date());
+				const fechaFinDate = link.fechaFin ? parse(link.fechaFin, 'dd-MM-yyyy', new Date()) : undefined;
+
+				return {
+					idOrganizacion,
+					idProyecto: link.idProyecto,
+					fechaInicio: fechaInicioDate,
+					fechaFin: fechaFinDate,
+				} as ProyectoOrganizacion;
+			})
+		);
+		return await repo.save(records);
 	}
 }

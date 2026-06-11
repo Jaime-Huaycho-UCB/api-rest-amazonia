@@ -4,6 +4,7 @@ import { RegisterFormaJuridicaDto } from "./register-forma-juridica.dto";
 import { RegisterApoyosDto } from "./register-apoyos.dto";
 import { RegisterMotivosApoyosDto } from "./register-motivos-apoyos.dto";
 import { RegisterProyectosDto } from "../proyectos/register-proyectos.dto";
+import { LinkProyectoDto } from "../proyectos/link-proyecto.dto";
 import { Type } from "class-transformer";
 
 export class RegisterFormularioEmpresaDto {
@@ -103,4 +104,16 @@ export class RegisterFormularioEmpresaDto {
     @ValidateNested({  message: 'empresa.proyectos contiene errores internos' })
     @Type(() => RegisterProyectosDto)
     proyectos?: RegisterProyectosDto[];
+
+    @ApiProperty({
+        description: 'Proyectos existentes a los que se vincula la empresa (sin crear nuevos)',
+        type: [LinkProyectoDto],
+        nullable: true
+    })
+    @IsOptional()
+    @IsArray({ message: 'empresa.proyectosExistentes debe ser un array' })
+    @ArrayMinSize(1, { message: 'empresa.proyectosExistentes debe tener al menos 1 elemento si se envía' })
+    @ValidateNested({ each: true, message: 'empresa.proyectosExistentes contiene errores internos' })
+    @Type(() => LinkProyectoDto)
+    proyectosExistentes?: LinkProyectoDto[];
 }
