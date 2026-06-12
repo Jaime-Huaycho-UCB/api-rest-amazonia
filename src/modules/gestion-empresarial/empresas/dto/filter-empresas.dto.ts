@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 import { PaginationParamsDto } from 'src/shared/dto/pagination-params.dto';
 
 export class FilterEmpresasDto extends PaginationParamsDto {
@@ -24,4 +24,15 @@ export class FilterEmpresasDto extends PaginationParamsDto {
     @IsString({ message: "El parámetro 'search' debe ser un texto" })
     @MaxLength(100, { message: "El parámetro 'search' no puede superar 100 caracteres" })
     search?: string;
+
+    @ApiPropertyOptional({
+        description: "Ordenar resultados. Formato: 'campo:asc' o 'campo:desc'. Campos válidos: nombre, anioInicioApoyo",
+        type: String,
+        example: 'nombre:asc',
+    })
+    @IsOptional()
+    @IsIn(['nombre:asc', 'nombre:desc', 'anioInicioApoyo:asc', 'anioInicioApoyo:desc'], {
+        message: "El parámetro 'sort' debe ser uno de: nombre:asc, nombre:desc, anioInicioApoyo:asc, anioInicioApoyo:desc",
+    })
+    sort?: string;
 }

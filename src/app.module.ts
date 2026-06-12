@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { MyConfigModule } from './infrastructure/config/config.module';
 import { MyDatabaseModule } from './infrastructure/database/database.module';
 import { TiposOrganizacionesModule } from './modules/catalogos/tipos-organizaciones/tipos-organizaciones.module';
@@ -35,11 +37,15 @@ import { ComunidadesIndigenasAreasModule } from './modules/gestion-comunidades/c
 import { ComunidadesMunicipiosModule } from './modules/ubicaciones-geograficas/comunidades-municipios/comunidades-municipios.module';
 import { FormulariosModule } from './app/formularios/formularios.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
 	imports: [
 		MyConfigModule,
 		MyDatabaseModule,
+		// Rate limiting global: 60 req / 60s por IP en todos los endpoints
+		// Los endpoints de auth (/login, /register) aplican límite más estricto vía @Throttle()
+		ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]),
 		AuthModule,
 		TiposOrganizacionesModule,
 		AreasDesarrolloModule,
@@ -74,6 +80,11 @@ import { AuthModule } from './modules/auth/auth.module';
 		ComunidadesIndigenasAreasModule,
 		ComunidadesMunicipiosModule,
 		FormulariosModule,
+		DashboardModule,
+	],
+	providers: [
+		// Aplica el rate limiting global a todos los endpoints
+		{ provide: APP_GUARD, useClass: ThrottlerGuard },
 	],
 })
 export class AppModule { }

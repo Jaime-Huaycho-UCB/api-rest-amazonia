@@ -6,6 +6,8 @@ import { Organizacion } from '../entities/organizacion.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { TiposOrganizacionesService } from 'src/modules/catalogos/tipos-organizaciones/services/tipos-organizaciones.service';
 import { DepartamentosService } from 'src/modules/ubicaciones-geograficas/departamentos/services/departamentos.service';
+import { MyNotFoundException } from 'src/shared/exceptions';
+import { buildPagination } from 'src/shared/utils/pagination.util';
 
 @Injectable()
 export class OrganizacionesService {
@@ -15,6 +17,21 @@ export class OrganizacionesService {
 		private readonly tiposOrganizacionesService: TiposOrganizacionesService,
 		private readonly departamentosService: DepartamentosService,
 	){}
+
+	async findOne(id: number) {
+		const organizacion = await this.organizacionRepository.findOne({
+			where: { id },
+			relations: {
+				tipo: true,
+				departamento: true,
+				proyectosOrganizaciones: true,
+			},
+		});
+		if (!organizacion) {
+			throw new MyNotFoundException(`Organización con id ${id} no encontrada`);
+		}
+		return organizacion;
+	}
 
 	async create(data: CreateOrganizacioneDto,manager?: EntityManager){
 		const repo = manager ? manager.getRepository(Organizacion) : this.organizacionRepository;
@@ -60,13 +77,7 @@ export class OrganizacionesService {
 			.take(limit)
 			.getManyAndCount();
 
-		return {
-			data: organizaciones,
-			page,
-			limit,
-			pages: Math.ceil(total / limit),
-			total,
-		};
+		return buildPagination(organizaciones, total, page, limit);
 	}
 }
 

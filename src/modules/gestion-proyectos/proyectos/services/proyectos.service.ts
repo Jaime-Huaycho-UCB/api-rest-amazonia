@@ -14,6 +14,7 @@ import { CreateComunidadesIndigenasAreaDto } from 'src/modules/gestion-comunidad
 import { MyBadRequestException } from 'src/shared/exceptions';
 import { ConservacionAgricolasService } from 'src/modules/gestion-conservacion/conservacion-agricolas/services/conservacion-agricolas.service';
 import { ComunidadesIndigenasAreasService } from 'src/modules/gestion-comunidades/comunidades-indigenas-areas/services/comunidades-indigenas-areas.service';
+import { buildPagination } from 'src/shared/utils';
 
 @Injectable()
 export class ProyectosService {
@@ -28,6 +29,29 @@ export class ProyectosService {
 		private readonly conservacionAgricolasService: ConservacionAgricolasService,
 		private readonly comunidadesIndigenasAreasService: ComunidadesIndigenasAreasService
 	){}
+
+	async findOne(id: number) {
+		const proyecto = await this.proyectoRepository.findOne({
+			where: { id },
+			relations: {
+				area: true,
+				tipo: true,
+				ayudas: true,
+				actoresMunicipales: true,
+				especiesAnimales: true,
+				practicasAgricolas: true,
+				areasDesarrollo: true,
+				localidadesProyectos: {
+					municipio: true,
+					comunidad: true,
+				},
+			},
+		});
+		if (!proyecto) {
+			throw new MyBadRequestException(`Proyecto con id ${id} no encontrado`);
+		}
+		return proyecto;
+	}
 
 	async create(data: CreateProyectoDto,manager?: EntityManager){
 		const repo = manager ? manager.getRepository(Proyecto) : this.proyectoRepository
@@ -73,9 +97,14 @@ export class ProyectosService {
 		await this.comunidadesIndigenasAreasService.createMany(idProyecto,data,manager);
 	}
 
-	async findAll(params?: { page?: number; limit?: number; area?: number; departamento?: number; tipo?: number; anio?: number; search?: string }) {
+	async findAll(params?: { page?: number; limit?: number; area?: number; departamento?: number; tipo?: number; anio?: number; search?: string; sort?: string }) {
 		const page = params?.page ?? 1;
 		const limit = params?.limit ?? 10;
+
+		const [sortField, sortDir] = (params?.sort ?? 'id:asc').split(':');
+		const sortMap: Record<string, string> = { nombre: 'p.nombre', anioInicio: 'p.anioInicio', id: 'p.id' };
+		const orderField = sortMap[sortField] ?? 'p.id';
+		const orderDir = (sortDir?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC') as 'ASC' | 'DESC';
 
 		const qb = this.proyectoRepository
 			.createQueryBuilder('p')
@@ -86,7 +115,7 @@ export class ProyectosService {
 			.leftJoinAndSelect('p.localidadesProyectos', 'localidades')
 			.leftJoinAndSelect('localidades.municipio', 'municipio')
 			.leftJoinAndSelect('municipio.departamento', 'departamento')
-			.orderBy('p.id', 'ASC');
+			.orderBy(orderField, orderDir);
 
 		if (params?.search) {
 			qb.andWhere('p.nombre ILIKE :search', { search: `%${params.search}%` });
@@ -113,12 +142,6 @@ export class ProyectosService {
 			.take(limit)
 			.getManyAndCount();
 
-		return {
-			data: proyectos,
-			page,
-			limit,
-			pages: Math.ceil(total / limit),
-			total,
-		};
+		return buildPagination(proyectos, total, page, limit);
 	}
 }

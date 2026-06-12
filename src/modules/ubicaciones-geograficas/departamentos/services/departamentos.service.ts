@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Departamento } from '../entities/departamento.entity';
 import { FindManyOptions, In, Repository } from 'typeorm';
 import { MyBadRequestException, MyNotFoundException } from 'src/shared/exceptions';
+import { buildPagination } from 'src/shared/utils/pagination.util';
 
 @Injectable()
 export class DepartamentosService {
@@ -35,13 +36,7 @@ export class DepartamentosService {
 			.take(limit)
 			.getManyAndCount();
 
-		return {
-			data: departamentos,
-			page,
-			limit,
-			pages: Math.ceil(total / limit),
-			total,
-		};
+		return buildPagination(departamentos, total, page, limit);
 	}
 
 	async findAllByIds(ids: number[]){

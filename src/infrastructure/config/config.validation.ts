@@ -20,6 +20,6 @@ export const validationSchema = Joi.object({
     JWT_SECRET: Joi.string().required(),
     JWT_TIME_EXPIRE: Joi.string().default('24h'),
 
-    SEED_SUPERADMIN_EMAIL: Joi.string().email().optional(),
+    SEED_SUPERADMIN_EMAIL: Joi.string().email({ tlds: { allow: false } }).optional(),
     SEED_SUPERADMIN_PASSWORD: Joi.string().min(8).optional(),
 });

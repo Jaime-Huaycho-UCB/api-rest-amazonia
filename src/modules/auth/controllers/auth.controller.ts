@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
     ApiBadRequestResponse,
     ApiBearerAuth,
@@ -8,6 +9,8 @@ import {
     ApiNotFoundResponse,
     ApiOkResponse,
     ApiOperation,
+    ApiQuery,
+    ApiResponse,
     ApiTags,
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -16,6 +19,8 @@ import { AuthService } from '../services/auth.service';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterUsuarioDto } from '../dto/register-usuario.dto';
 import { UpdateUsuarioDto } from '../dto/update-usuario.dto';
+import { UpdatePerfilPropioDto } from '../dto/update-perfil-propio.dto';
+import { ChangePasswordDto } from '../dto/change-password.dto';
 import { TokenResponseDto } from '../dto/token-response.dto';
 import { UsuarioResponseDto } from '../dto/usuario-response.dto';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
@@ -34,44 +39,181 @@ import {
     SwaggerForbiddenCommon,
     SwaggerNotFoundCommon,
     SwaggerConflictCommon,
+    SwaggerTooManyRequestsCommon,
 } from 'src/shared/utils';
 
-@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
+    // ──────────────────────────────────────────────────────────────
+    // GRUPO: Auth — Público
+    // ──────────────────────────────────────────────────────────────
+
     @Post('login')
-    @ApiOperation({ summary: 'Iniciar sesión y obtener token JWT' })
-    @ApiCreatedResponse({ type: TokenResponseDto, description: 'Login exitoso, retorna token JWT' })
+    @ApiTags('Auth — Público')
+    @Throttle({ default: { limit: 5, ttl: 60000 } })
+    @ApiOperation({
+        summary: 'Iniciar sesión',
+        description:
+            '🔓 **Acceso público — sin token requerido.**\n\n' +
+            'Valida email y contraseña y devuelve un token JWT de acceso.\n\n' +
+            '**Uso del token:** incluye el `accessToken` recibido en todas las peticiones protegidas:\n' +
+            '`Authorization: Bearer <accessToken>`\n\n' +
+            '**Seguridad:**\n' +
+            '- El tiempo de respuesta es constante independientemente de si el email existe, para prevenir enumeración de usuarios (OWASP A07).\n' +
+            '- **Rate limiting:** máximo 5 intentos por IP cada 60 segundos. Superar este límite devuelve `429`.',
+    })
+    @ApiCreatedResponse({
+        type: TokenResponseDto,
+        description: 'Login exitoso. Devuelve el token JWT y su tiempo de expiración.',
+    })
     @ApiBadRequestResponse(SwaggerBadRequestCommon())
-    @ApiUnauthorizedResponse(SwaggerUnauthorizedCommon())
+    @ApiUnauthorizedResponse({
+        description: 'Credenciales inválidas, cuenta desactivada o acceso expirado (investigadores).',
+    })
+    @ApiResponse({ status: HttpStatus.TOO_MANY_REQUESTS, ...SwaggerTooManyRequestsCommon() })
     async login(@Body() dto: LoginDto, @Res() res: Response) {
         const result = await this.authService.login(dto);
         return CreatedRes(res, result);
     }
 
-    @Get('me')
+    // ──────────────────────────────────────────────────────────────
+    // GRUPO: Auth — Usuario Autenticado
+    // ──────────────────────────────────────────────────────────────
+
+    @Post('logout')
+    @ApiTags('Auth — Usuario Autenticado')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth('access-token')
-    @ApiOperation({ summary: 'Obtener información del usuario autenticado' })
-    @ApiOkResponse({ type: UsuarioResponseDto, description: 'Datos del usuario autenticado' })
+    @ApiOperation({
+        summary: 'Cerrar sesión',
+        description:
+            '🔒 **Requiere token válido (cualquier rol).**\n\n' +
+            'Confirma el cierre de sesión del usuario autenticado.\n\n' +
+            '**Importante:** los tokens JWT son stateless — la invalidación real ocurre eliminando el token en el cliente (localStorage, memoria, cookie). ' +
+            'Este endpoint sirve como confirmación semántica del logout.\n\n' +
+            'En una futura versión se puede extender con una blacklist de tokens para invalidación inmediata en servidor.',
+    })
+    @ApiOkResponse({ description: 'Sesión cerrada. El cliente debe eliminar el token localmente.' })
+    @ApiUnauthorizedResponse(SwaggerUnauthorizedCommon())
+    async logout(@Res() res: Response) {
+        return OkRes(res, { message: 'Sesión cerrada. Elimina el token en el cliente.' });
+    }
+
+    @Get('me')
+    @ApiTags('Auth — Usuario Autenticado')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: 'Obtener perfil propio',
+        description:
+            '🔒 **Requiere token válido (cualquier rol).**\n\n' +
+            'Devuelve los datos del perfil del usuario autenticado a partir del token JWT.\n\n' +
+            '**Campos devueltos:** `id`, `email`, `nombre`, `rol` (1=Superadmin, 2=Admin, 3=Investigador), `activo`, `fechaExpiracion` (null para Superadmin y Admin), `createdAt`, `updatedAt`.\n\n' +
+            '**Nunca se devuelve:** `passwordHash` ni ninguna credencial.',
+    })
+    @ApiOkResponse({
+        type: UsuarioResponseDto,
+        description: 'Perfil completo del usuario autenticado.',
+    })
     @ApiUnauthorizedResponse(SwaggerUnauthorizedCommon())
     async me(@CurrentUser() user: JwtPayload, @Res() res: Response) {
         const result = await this.authService.me(user);
         return OkRes(res, { usuario: result });
     }
 
+    @Put('me')
+    @ApiTags('Auth — Usuario Autenticado')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: 'Actualizar perfil propio',
+        description:
+            '🔒 **Requiere token válido (cualquier rol).**\n\n' +
+            'Permite al usuario actualizar su propio perfil.\n\n' +
+            '**Restricción:** solo se puede modificar el `nombre`. El `rol` y el estado `activo` no son editables desde este endpoint — esos campos son gestionados exclusivamente por Admin.',
+    })
+    @ApiOkResponse({
+        type: UsuarioResponseDto,
+        description: 'Perfil actualizado exitosamente.',
+    })
+    @ApiBadRequestResponse(SwaggerBadRequestCommon())
+    @ApiUnauthorizedResponse(SwaggerUnauthorizedCommon())
+    async updateMe(
+        @Body() dto: UpdatePerfilPropioDto,
+        @CurrentUser() user: JwtPayload,
+        @Res() res: Response,
+    ) {
+        const result = await this.authService.updateMe(dto, user);
+        return OkRes(res, { usuario: result });
+    }
+
+    @Post('change-password')
+    @ApiTags('Auth — Usuario Autenticado')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: 'Cambiar contraseña propia',
+        description:
+            '🔒 **Requiere token válido (cualquier rol).**\n\n' +
+            'Permite cambiar la contraseña verificando primero la contraseña actual.\n\n' +
+            '**Reglas de la nueva contraseña:**\n' +
+            '- Mínimo 8 caracteres\n' +
+            '- Al menos una mayúscula\n' +
+            '- Al menos un número\n' +
+            '- Al menos un símbolo (ej: `!`, `@`, `#`, `$`)\n\n' +
+            '**Nota:** las sesiones activas con el token anterior siguen siendo válidas hasta que expiren de forma natural (TTL del JWT). ' +
+            'Para invalidación inmediata se requiere implementar blacklist de tokens (backlog).',
+    })
+    @ApiOkResponse({ description: 'Contraseña cambiada exitosamente.' })
+    @ApiBadRequestResponse(SwaggerBadRequestCommon())
+    @ApiUnauthorizedResponse({
+        description: '401: token inválido/expirado, o la contraseña actual es incorrecta.',
+    })
+    async changePassword(
+        @Body() dto: ChangePasswordDto,
+        @CurrentUser() user: JwtPayload,
+        @Res() res: Response,
+    ) {
+        await this.authService.changePassword(dto.currentPassword, dto.newPassword, user);
+        return OkRes(res, { message: 'Contraseña cambiada exitosamente' });
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // GRUPO: Auth — Admin
+    // ──────────────────────────────────────────────────────────────
+
     @Post('register')
+    @ApiTags('Auth — Admin')
+    @Throttle({ default: { limit: 10, ttl: 60000 } })
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RoleEnum.Admin)
     @ApiBearerAuth('access-token')
-    @ApiOperation({ summary: 'Crear nuevo usuario (Admin o Superadmin). Solo Admin+.' })
-    @ApiCreatedResponse({ type: UsuarioResponseDto, description: 'Usuario creado exitosamente' })
+    @ApiOperation({
+        summary: 'Crear nuevo usuario (Admin o Superadmin)',
+        description:
+            '🔒 **Requiere rol: Admin o Superadmin.**\n\n' +
+            'Crea un nuevo usuario con rol Admin (2) o Superadmin (1).\n\n' +
+            '**Reglas de creación de usuarios:**\n' +
+            '- Un `Admin` solo puede crear usuarios con rol `Admin` (2). Intentar crear un `Superadmin` devuelve `403`.\n' +
+            '- Un `Superadmin` puede crear usuarios con cualquier rol.\n' +
+            '- Los `Investigadores` se crean únicamente a través del flujo de solicitud de acceso (`POST /auth/solicitar-acceso` → aprobación).\n\n' +
+            '**Reglas de contraseña:**\n' +
+            '- Mínimo 8 caracteres, al menos una mayúscula, un número y un símbolo.\n\n' +
+            '**Rate limiting:** máximo 10 creaciones por IP cada 60 segundos.',
+    })
+    @ApiCreatedResponse({
+        type: UsuarioResponseDto,
+        description: 'Usuario creado exitosamente. Devuelve el perfil sin contraseña.',
+    })
     @ApiBadRequestResponse(SwaggerBadRequestCommon())
     @ApiUnauthorizedResponse(SwaggerUnauthorizedCommon())
-    @ApiForbiddenResponse(SwaggerForbiddenCommon())
+    @ApiForbiddenResponse({
+        description: '403: rol insuficiente, o Admin intentando crear Superadmin.',
+    })
     @ApiConflictResponse(SwaggerConflictCommon())
+    @ApiResponse({ status: HttpStatus.TOO_MANY_REQUESTS, ...SwaggerTooManyRequestsCommon() })
     async register(
         @Body() dto: RegisterUsuarioDto,
         @CurrentUser() user: JwtPayload,
@@ -82,11 +224,25 @@ export class AuthController {
     }
 
     @Get('usuarios')
+    @ApiTags('Auth — Admin')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RoleEnum.Admin)
     @ApiBearerAuth('access-token')
-    @ApiOperation({ summary: 'Listar todos los usuarios con paginación. Solo Admin+.' })
-    @ApiOkResponse({ type: PaginationResponseDto, description: 'Listado paginado de usuarios' })
+    @ApiOperation({
+        summary: 'Listar todos los usuarios',
+        description:
+            '🔒 **Requiere rol: Admin o Superadmin.**\n\n' +
+            'Devuelve el listado paginado de todos los usuarios registrados en el sistema.\n\n' +
+            '**Paginación:** usa `?page=1&limit=10`. El límite máximo es 100 por petición.\n\n' +
+            '**Nota:** actualmente la lista no soporta filtros por `rol`, `activo` o `search`. ' +
+            'Esta funcionalidad está pendiente de implementación (ver backlog).',
+    })
+    @ApiQuery({ name: 'page', required: false, type: Number, description: 'Número de página (default: 1)', example: 1 })
+    @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Resultados por página (default: 10, máximo: 100)', example: 10 })
+    @ApiOkResponse({
+        type: PaginationResponseDto,
+        description: 'Listado paginado de usuarios con has_next y has_prev.',
+    })
     @ApiUnauthorizedResponse(SwaggerUnauthorizedCommon())
     @ApiForbiddenResponse(SwaggerForbiddenCommon())
     async findAll(@Query() params: PaginationParamsDto, @Res() res: Response) {
@@ -95,14 +251,29 @@ export class AuthController {
     }
 
     @Patch('usuarios/:id')
+    @ApiTags('Auth — Admin')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RoleEnum.Admin)
     @ApiBearerAuth('access-token')
-    @ApiOperation({ summary: 'Actualizar datos de un usuario. Solo Admin+.' })
-    @ApiOkResponse({ type: UsuarioResponseDto, description: 'Usuario actualizado exitosamente' })
+    @ApiOperation({
+        summary: 'Actualizar datos de un usuario',
+        description:
+            '🔒 **Requiere rol: Admin o Superadmin.**\n\n' +
+            'Permite modificar `nombre`, `activo` y `rol` de cualquier usuario.\n\n' +
+            '**Restricciones:**\n' +
+            '- Solo un `Superadmin` puede asignar el rol `Superadmin` (1). Si un `Admin` intenta asignarlo, recibe `403`.\n' +
+            '- Cambiar `activo` a `false` desactiva la cuenta. El usuario no podrá hacer login hasta que se reactive.\n' +
+            '- Los tokens JWT existentes del usuario desactivado siguen siendo válidos hasta su expiración natural (el logout forzado requiere blacklist — backlog).',
+    })
+    @ApiOkResponse({
+        type: UsuarioResponseDto,
+        description: 'Usuario actualizado exitosamente.',
+    })
     @ApiBadRequestResponse(SwaggerBadRequestCommon())
     @ApiUnauthorizedResponse(SwaggerUnauthorizedCommon())
-    @ApiForbiddenResponse(SwaggerForbiddenCommon())
+    @ApiForbiddenResponse({
+        description: '403: rol insuficiente, o Admin intentando asignar rol Superadmin.',
+    })
     @ApiNotFoundResponse(SwaggerNotFoundCommon())
     async update(
         @Param('id', ParseIntPipe) id: number,
@@ -115,13 +286,24 @@ export class AuthController {
     }
 
     @Delete('usuarios/:id')
+    @ApiTags('Auth — Admin')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RoleEnum.Superadmin)
     @ApiBearerAuth('access-token')
-    @ApiOperation({ summary: 'Eliminar un usuario permanentemente. Solo Superadmin.' })
-    @ApiOkResponse({ description: 'Usuario eliminado exitosamente' })
+    @ApiOperation({
+        summary: 'Eliminar usuario permanentemente',
+        description:
+            '🔒 **Requiere rol: Superadmin exclusivamente.** Admin recibe `403`.\n\n' +
+            'Elimina el usuario de forma permanente e irrecuperable de la base de datos.\n\n' +
+            '**Restricciones:**\n' +
+            '- Un Superadmin no puede eliminarse a sí mismo (`403`).\n' +
+            '- Esta acción es irreversible. Para desactivar temporalmente sin perder datos usa `PATCH /auth/usuarios/:id` con `{ "activo": false }`.',
+    })
+    @ApiOkResponse({ description: 'Usuario eliminado exitosamente.' })
     @ApiUnauthorizedResponse(SwaggerUnauthorizedCommon())
-    @ApiForbiddenResponse(SwaggerForbiddenCommon())
+    @ApiForbiddenResponse({
+        description: '403: el usuario autenticado no es Superadmin, o intenta eliminarse a sí mismo.',
+    })
     @ApiNotFoundResponse(SwaggerNotFoundCommon())
     async delete(
         @Param('id', ParseIntPipe) id: number,

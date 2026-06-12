@@ -35,4 +35,18 @@ export class PaginationResponseDto<T> {
         example: 42,
     })
     total: number;
+
+    @ApiProperty({
+        description: 'Indica si existe una página siguiente',
+        type: Boolean,
+        example: true,
+    })
+    has_next: boolean;
+
+    @ApiProperty({
+        description: 'Indica si existe una página anterior',
+        type: Boolean,
+        example: false,
+    })
+    has_prev: boolean;
 }

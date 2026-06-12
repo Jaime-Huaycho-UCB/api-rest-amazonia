@@ -917,4 +917,61 @@ CREATE TABLE comunidades_indigenas_areas (
 -- [/schema > gestion-comunidades]
 
 
+-- [schema > auth] -----------------------------------------
+-- Tablas agregadas en: 2026-06-11 — Módulo de autenticación
+-- ==========================================================
+
+-- [schema > auth > usuarios] ------------------------------
+CREATE TABLE usuarios (
+    id_usuario        SERIAL,
+    email             VARCHAR(255)    NOT NULL UNIQUE,
+    password_hash     VARCHAR(255)    NOT NULL,            -- hash bcrypt (cost 12), nunca retornar en respuestas
+    nombre            VARCHAR(150)    NOT NULL,
+    rol               INT             NOT NULL,            -- 1=Superadmin, 2=Admin, 3=Investigador
+    activo            BOOLEAN         NOT NULL DEFAULT TRUE,
+    fecha_expiracion  TIMESTAMP,                           -- solo para Investigadores; NULL = sin expiración
+    created_at        TIMESTAMP       NOT NULL DEFAULT NOW(),
+    updated_at        TIMESTAMP       NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id_usuario)
+);
+
+CREATE UNIQUE INDEX idx_usuarios_email ON usuarios(email);
+CREATE INDEX idx_usuarios_rol ON usuarios(rol);
+
+-- Sin datos iniciales — usar: npm run seed:superadmin
+
+
+-- [/schema > auth > usuarios]
+
+
+-- [schema > auth > solicitudes-acceso] --------------------
+CREATE TABLE solicitudes_acceso (
+    id_solicitud             SERIAL,
+    nombre_solicitante       VARCHAR(150)     NOT NULL,
+    email_solicitante        VARCHAR(255)     NOT NULL,    -- email del solicitante (no tiene que ser único)
+    institucion              VARCHAR(255)     NOT NULL,
+    proposito                TEXT             NOT NULL,
+    estado                   VARCHAR(20)      NOT NULL DEFAULT 'pendiente',  -- pendiente | aprobada | rechazada
+    fecha_expiracion_acceso  TIMESTAMP,                   -- definida por el admin al aprobar
+    id_revisor               INT,                         -- FK al admin que revisó la solicitud
+    id_usuario_creado        INT,                         -- FK al usuario creado al aprobar (Investigador)
+    nota_rechazo             TEXT,
+    fecha_revision           TIMESTAMP,
+    created_at               TIMESTAMP        NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id_solicitud),
+    FOREIGN KEY (id_revisor) REFERENCES usuarios(id_usuario)
+);
+
+CREATE INDEX idx_solicitudes_estado ON solicitudes_acceso(estado);
+CREATE INDEX idx_solicitudes_email ON solicitudes_acceso(email_solicitante);
+
+-- Sin datos iniciales
+
+
+-- [/schema > auth > solicitudes-acceso]
+
+
+-- [/schema > auth]
+
+
 -- [/schema]

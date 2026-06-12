@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsNotEmpty, IsString, Length, MinLength } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString, Length, Matches, MinLength } from 'class-validator';
 import { RoleEnum } from 'src/shared/enums/role.enum';
 
 export class RegisterUsuarioDto {
@@ -30,6 +30,10 @@ export class RegisterUsuarioDto {
     @IsString({ message: 'password debe ser un texto' })
     @IsNotEmpty({ message: 'password es obligatorio' })
     @MinLength(8, { message: 'password debe tener al menos 8 caracteres' })
+    // OWASP: requiere al menos una mayúscula, un número y un carácter especial
+    @Matches(/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d])/, {
+        message: 'password debe contener al menos una mayúscula, un número y un símbolo',
+    })
     password: string;
 
     @ApiProperty({

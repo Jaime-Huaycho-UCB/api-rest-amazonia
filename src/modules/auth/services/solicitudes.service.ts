@@ -17,6 +17,7 @@ import {
     MyNotFoundException,
 } from 'src/shared/exceptions';
 import { hashPassword } from 'src/shared/utils/crypto.util';
+import { buildPagination } from 'src/shared/utils/pagination.util';
 
 @Injectable()
 export class SolicitudesService {
@@ -73,13 +74,7 @@ export class SolicitudesService {
             .take(limit)
             .getManyAndCount();
 
-        return {
-            data: solicitudes.map((s) => this.toResponse(s)),
-            page,
-            limit,
-            pages: Math.ceil(total / limit),
-            total,
-        };
+        return buildPagination(solicitudes.map((s) => this.toResponse(s)), total, page, limit);
     }
 
     async aprobar(id: number, dto: AprobarSolicitudDto, revisor: JwtPayload): Promise<{ message: string; idUsuario: number }> {

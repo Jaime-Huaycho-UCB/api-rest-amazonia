@@ -36,3 +36,10 @@ export const SwaggerForbiddenCommon = () => {
         type: CommonResponseDto
     }
 }
+
+export const SwaggerTooManyRequestsCommon = () => {
+    return {
+        description: 'Demasiadas solicitudes desde esta IP. Espera antes de reintentar.',
+        type: CommonResponseDto
+    }
+}

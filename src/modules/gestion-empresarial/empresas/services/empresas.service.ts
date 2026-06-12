@@ -10,6 +10,8 @@ import { ApoyosEmpresasService } from '../../apoyos-empresas/services/apoyos-emp
 import { OrganizacionesEmpresasService } from 'src/modules/gestion-organizacional/organizaciones-empresas/services/organizaciones-empresas.service';
 import { MotivosEmpresasService } from '../../motivos-empresas/services/motivos-empresas.service';
 import { OdsEmpresasService } from '../../ods-empresas/services/ods-empresas.service';
+import { MyNotFoundException } from 'src/shared/exceptions';
+import { buildPagination } from 'src/shared/utils/pagination.util';
 
 @Injectable()
 export class EmpresasService {
@@ -23,6 +25,24 @@ export class EmpresasService {
 		private readonly motivosEmpresasService: MotivosEmpresasService,
 		private readonly odsEmpresasService: OdsEmpresasService
 	){}
+
+	async findOne(id: number) {
+		const empresa = await this.empresaRepository.findOne({
+			where: { id },
+			relations: {
+				formaJuridica: true,
+				departamentos: true,
+				apoyos: true,
+				motivos: true,
+				ods: true,
+				organizacionesEmpresas: true,
+			},
+		});
+		if (!empresa) {
+			throw new MyNotFoundException(`Empresa con id ${id} no encontrada`);
+		}
+		return empresa;
+	}
 
 	async create(data: CreateEmpresaDto,manager?: EntityManager) {
 		const repo = manager ? manager.getRepository(Empresa) : this.empresaRepository;
@@ -44,9 +64,14 @@ export class EmpresasService {
 		return empresaSaved;
 	}
 
-	async findAll(params?: { page?: number; limit?: number; departamento?: number; search?: string }) {
+	async findAll(params?: { page?: number; limit?: number; departamento?: number; search?: string; sort?: string }) {
 		const page = params?.page ?? 1;
 		const limit = params?.limit ?? 10;
+
+		const [sortField, sortDir] = (params?.sort ?? 'id:asc').split(':');
+		const sortMap: Record<string, string> = { nombre: 'e.nombre', anioInicioApoyo: 'e.anioInicioApoyo', id: 'e.id' };
+		const orderField = sortMap[sortField] ?? 'e.id';
+		const orderDir = (sortDir?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC') as 'ASC' | 'DESC';
 
 		const qb = this.empresaRepository
 			.createQueryBuilder('e')
@@ -56,7 +81,7 @@ export class EmpresasService {
 			.leftJoinAndSelect('e.motivos', 'motivos')
 			.leftJoinAndSelect('e.ods', 'ods')
 			.leftJoinAndSelect('e.organizacionesEmpresas', 'organizacionesEmpresas')
-			.orderBy('e.id', 'ASC');
+			.orderBy(orderField, orderDir);
 
 		if (params?.search) {
 			qb.andWhere('e.nombre ILIKE :search', { search: `%${params.search}%` });
@@ -71,12 +96,6 @@ export class EmpresasService {
 			.take(limit)
 			.getManyAndCount();
 
-		return {
-			data: empresas,
-			page,
-			limit,
-			pages: Math.ceil(total / limit),
-			total,
-		};
+		return buildPagination(empresas, total, page, limit);
 	}
 }

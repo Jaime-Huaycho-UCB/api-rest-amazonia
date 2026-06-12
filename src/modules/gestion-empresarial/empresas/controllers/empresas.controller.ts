@@ -1,8 +1,8 @@
-import { Controller, Get, Query, Res } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query, Res } from '@nestjs/common';
 import { EmpresasService } from '../services/empresas.service';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { OkRes } from 'src/shared/utils';
+import { OkRes, SwaggerNotFoundCommon } from 'src/shared/utils';
 import { FilterEmpresasDto } from '../dto/filter-empresas.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 
@@ -17,5 +17,14 @@ export class EmpresasController {
     async findAll(@Query() params: FilterEmpresasDto, @Res() res: Response) {
         const result = await this.empresasService.findAll(params);
         return OkRes(res, result);
+    }
+
+    @Get(':id')
+    @ApiOperation({ summary: 'Obtener detalle completo de una empresa por ID' })
+    @ApiOkResponse({ description: 'Empresa encontrada con todas sus relaciones' })
+    @ApiNotFoundResponse(SwaggerNotFoundCommon())
+    async findOne(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+        const empresa = await this.empresasService.findOne(id);
+        return OkRes(res, { empresa });
     }
 }

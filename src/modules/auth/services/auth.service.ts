@@ -7,6 +7,7 @@ import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterUsuarioDto } from '../dto/register-usuario.dto';
 import { UpdateUsuarioDto } from '../dto/update-usuario.dto';
+import { UpdatePerfilPropioDto } from '../dto/update-perfil-propio.dto';
 import { TokenResponseDto } from '../dto/token-response.dto';
 import { UsuarioResponseDto } from '../dto/usuario-response.dto';
 import { PaginationParamsDto } from 'src/shared/dto/pagination-params.dto';
@@ -20,6 +21,7 @@ import {
     MyForbiddenException,
 } from 'src/shared/exceptions';
 import { comparePassword, hashPassword } from 'src/shared/utils/crypto.util';
+import { buildPagination } from 'src/shared/utils/pagination.util';
 
 @Injectable()
 export class AuthService {
@@ -30,13 +32,21 @@ export class AuthService {
         private readonly jwtConfig: MyJwtConfig,
     ) {}
 
+    // Dummy hash para prevenir timing attacks (OWASP A07 - user enumeration)
+    private readonly DUMMY_HASH = '$2b$12$dummyhashfortimingattackprevention.XXXXXXXXXXXXXXXXXX';
+
     async login(dto: LoginDto): Promise<TokenResponseDto> {
         const usuario = await this.usuarioRepo.findOne({
             where: { email: dto.email },
             select: ['id', 'email', 'passwordHash', 'nombre', 'rol', 'activo', 'fechaExpiracion'],
         });
 
-        if (!usuario) {
+        // Siempre ejecutar comparePassword para que el tiempo de respuesta sea constante
+        // y no revelar si el email existe o no (OWASP A07 - user enumeration prevention)
+        const hashToCompare = usuario ? usuario.passwordHash : this.DUMMY_HASH;
+        const passwordValido = await comparePassword(dto.password, hashToCompare);
+
+        if (!usuario || !passwordValido) {
             throw new MyUnauthorizedException('Credenciales inválidas');
         }
 
@@ -46,11 +56,6 @@ export class AuthService {
 
         if (usuario.fechaExpiracion && new Date() > new Date(usuario.fechaExpiracion)) {
             throw new MyUnauthorizedException('Tu acceso ha expirado');
-        }
-
-        const passwordValido = await comparePassword(dto.password, usuario.passwordHash);
-        if (!passwordValido) {
-            throw new MyUnauthorizedException('Credenciales inválidas');
         }
 
         const payload: JwtPayload = {
@@ -114,13 +119,7 @@ export class AuthService {
             order: { createdAt: 'DESC' },
         });
 
-        return {
-            data: usuarios.map((u) => this.toResponse(u)),
-            page,
-            limit,
-            pages: Math.ceil(total / limit),
-            total,
-        };
+        return buildPagination(usuarios.map((u) => this.toResponse(u)), total, page, limit);
     }
 
     async update(id: number, dto: UpdateUsuarioDto, currentUser: JwtPayload): Promise<UsuarioResponseDto> {
@@ -139,6 +138,36 @@ export class AuthService {
 
         const actualizado = await this.usuarioRepo.save(usuario);
         return this.toResponse(actualizado);
+    }
+
+    async updateMe(dto: UpdatePerfilPropioDto, currentUser: JwtPayload): Promise<UsuarioResponseDto> {
+        const usuario = await this.usuarioRepo.findOne({ where: { id: currentUser.sub } });
+        if (!usuario) {
+            throw new MyNotFoundException('Usuario no encontrado');
+        }
+        // El usuario no puede cambiar su propio rol desde este endpoint
+        if (dto.nombre !== undefined) usuario.nombre = dto.nombre;
+        const actualizado = await this.usuarioRepo.save(usuario);
+        return this.toResponse(actualizado);
+    }
+
+    async changePassword(currentPasswordPlain: string, newPasswordPlain: string, currentUser: JwtPayload): Promise<void> {
+        const usuario = await this.usuarioRepo.findOne({
+            where: { id: currentUser.sub },
+            select: ['id', 'passwordHash'],
+        });
+        if (!usuario) {
+            throw new MyNotFoundException('Usuario no encontrado');
+        }
+
+        // Verificar contraseña actual antes de cambiarla
+        const passwordValido = await comparePassword(currentPasswordPlain, usuario.passwordHash);
+        if (!passwordValido) {
+            throw new MyUnauthorizedException('La contraseña actual es incorrecta');
+        }
+
+        usuario.passwordHash = await hashPassword(newPasswordPlain);
+        await this.usuarioRepo.save(usuario);
     }
 
     async delete(id: number, currentUser: JwtPayload): Promise<void> {
