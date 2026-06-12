@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { MyConfigModule } from './infrastructure/config/config.module';
 import { MyDatabaseModule } from './infrastructure/database/database.module';
 import { TiposOrganizacionesModule } from './modules/catalogos/tipos-organizaciones/tipos-organizaciones.module';
@@ -43,6 +45,12 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 	imports: [
 		MyConfigModule,
 		MyDatabaseModule,
+		// Serve /uploads directory for development (Nginx handles this in production)
+		ServeStaticModule.forRoot({
+			rootPath: join(process.cwd(), process.env.UPLOADS_PATH ?? 'uploads'),
+			serveRoot: '/uploads',
+			serveStaticOptions: { index: false, fallthrough: false },
+		}),
 		// Rate limiting global: 60 req / 60s por IP en todos los endpoints
 		// Los endpoints de auth (/login, /register) aplican límite más estricto vía @Throttle()
 		ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]),

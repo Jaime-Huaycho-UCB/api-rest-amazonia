@@ -72,6 +72,12 @@ async function main() {
     `);
     console.log('Índices solicitudes_acceso: OK');
 
+    // Columna añadida en iteración 2: token_valid_from para invalidación inmediata de tokens
+    await ds.query(`
+        ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS token_valid_from TIMESTAMP;
+    `);
+    console.log('Columna token_valid_from: OK');
+
     await ds.destroy();
     console.log('Migración completada exitosamente.');
 }

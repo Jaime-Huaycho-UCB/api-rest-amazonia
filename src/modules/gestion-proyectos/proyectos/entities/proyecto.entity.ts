@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn, ManyToMany, JoinTable } from 'typeorm';
+import { ProyectoImagen } from './proyecto-imagen.entity';
 import { ProyectoEmpresa } from '../../proyectos-empresas/entities/proyecto-empresa.entity';
 import { Area } from 'src/modules/catalogos/areas/entities/area.entity';
 import { TipoProyecto } from 'src/modules/catalogos/tipos-proyectos/entities/tipo-proyecto.entity';
@@ -37,6 +38,12 @@ export class Proyecto {
 
     @Column({ name: 'anio_fin', type: 'int', nullable: true })
     anioFin?: number;
+
+    @Column({ name: 'imagen_principal_url', type: 'text', nullable: true })
+    imagenPrincipalUrl: string | null;
+
+    @Column({ name: 'imagen_principal_path', type: 'text', nullable: true })
+    imagenPrincipalPath: string | null;
 
     @ManyToOne(() => Area, (area) => area.proyectos)
     @JoinColumn({ name: 'id_area' })
@@ -109,4 +116,7 @@ export class Proyecto {
 
     @OneToMany(() => ComunidadIndigenaArea, (cia) => cia.proyecto)
     comunidadesIndigenasAreas: ComunidadIndigenaArea[];
+
+    @OneToMany(() => ProyectoImagen, (img) => img.proyecto)
+    imagenes: ProyectoImagen[];
 }

@@ -36,7 +36,7 @@
 | Módulo de BD TypeORM + PostgreSQL (`synchronize: false`) | `src/infrastructure/database/database.module.ts` | ✅ |
 | Config JWT (secreto, expiración, activación condicional) | `src/infrastructure/config/services/jwt.config.ts` | ✅ |
 | Swagger UI en /api/documentation (solo en dev/test/debug) | `src/main.ts` | ✅ |
-| Dockerfile (node:22, puerto 3000) | `Dockerfile` | ✅ |
+| Dockerfile (node:22, puerto 3333) | `Dockerfile` | ✅ |
 | Excepciones HTTP personalizadas (400, 401, 403, 404, 409) | `src/shared/exceptions/` | ✅ |
 | Clases base de entidades (BaseCreated, BaseCreatedUpdated, BaseEntitySoftDelete) | `src/infrastructure/database/base.entity.ts` | ✅ |
 | Utilidades: crypto (bcrypt), http-response, swagger helpers | `src/shared/utils/` | ✅ |

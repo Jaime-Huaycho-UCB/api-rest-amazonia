@@ -4,7 +4,7 @@ import { UpdateMunicipioDto } from '../dto/update-municipio.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Municipio } from '../entities/municipio.entity';
 import { In, Repository } from 'typeorm';
-import { MyBadRequestException } from 'src/shared/exceptions';
+import { MyBadRequestException, MyNotFoundException } from 'src/shared/exceptions';
 import { buildPagination } from 'src/shared/utils/pagination.util';
 
 @Injectable()
@@ -48,6 +48,22 @@ export class MunicipiosService {
 			.getManyAndCount();
 
 		return buildPagination(municipios, total, page, limit);
+	}
+
+	async findComunidadesByMunicipio(id: number) {
+		const municipio = await this.municipioRepository.findOne({
+			where: { id },
+			select: {
+				id: true,
+				nombre: true,
+				comunidadesIndigenas: { id: true, nombre: true }
+			},
+			relations: { comunidadesIndigenas: true }
+		});
+		if (!municipio) {
+			throw new MyNotFoundException(`Municipio con ID ${id} no encontrado`);
+		}
+		return municipio.comunidadesIndigenas.sort((a, b) => a.nombre.localeCompare(b.nombre));
 	}
 
 	async findAllByIds(ids: number[]){

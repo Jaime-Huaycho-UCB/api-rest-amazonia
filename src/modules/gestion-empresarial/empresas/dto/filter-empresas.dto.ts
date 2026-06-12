@@ -16,6 +16,17 @@ export class FilterEmpresasDto extends PaginationParamsDto {
     departamento?: number;
 
     @ApiPropertyOptional({
+        description: 'Filtrar por ID de forma jurídica',
+        type: Number,
+        example: 1,
+    })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt({ message: "El parámetro 'forma_juridica' debe ser un número entero" })
+    @Min(1, { message: "El parámetro 'forma_juridica' debe ser mayor o igual a 1" })
+    forma_juridica?: number;
+
+    @ApiPropertyOptional({
         description: 'Buscar por nombre de empresa (búsqueda parcial, insensible a mayúsculas)',
         type: String,
         example: 'Amazonia',

@@ -164,8 +164,8 @@ WHERE tgname LIKE 'trg_dashboard%';
 npm run start:dev
 
 # Endpoint sin token → 401
-curl http://localhost:3000/api/dashboard/resumen
+curl http://localhost:3333/api/dashboard/resumen
 
 # Endpoint con token → 200
-curl -H "Authorization: Bearer <token>" http://localhost:3000/api/dashboard/resumen
+curl -H "Authorization: Bearer <token>" http://localhost:3333/api/dashboard/resumen
 ```

@@ -5,7 +5,7 @@ export const validationSchema = Joi.object({
     NODE_ENV: Joi.string()
         .valid(EnviromentEnum.DEVELOPMENT, EnviromentEnum.PRODUCTION, EnviromentEnum.TEST, EnviromentEnum.DEBUG)
         .default(EnviromentEnum.DEVELOPMENT),
-    PORT: Joi.number().default(3000),
+    PORT: Joi.number().default(3333),
     DOMAIN_FRONTEND: Joi.string().default('*'),
 
     DB_TYPE: Joi.string().required(),
@@ -22,4 +22,7 @@ export const validationSchema = Joi.object({
 
     SEED_SUPERADMIN_EMAIL: Joi.string().email({ tlds: { allow: false } }).optional(),
     SEED_SUPERADMIN_PASSWORD: Joi.string().min(8).optional(),
+
+    UPLOADS_PATH: Joi.string().default('./uploads'),
+    UPLOADS_BASE_URL: Joi.string().default('http://localhost:3333/uploads'),
 });

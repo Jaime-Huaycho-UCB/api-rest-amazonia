@@ -29,6 +29,11 @@ export class Usuario extends BaseCreatedUpdated {
     @Column({ name: 'fecha_expiracion', type: 'timestamp', nullable: true })
     fechaExpiracion: Date | null;
 
+    // Timestamp mínimo que debe tener el iat del token para ser válido.
+    // Se actualiza al desactivar la cuenta o cambiar contraseña, invalidando tokens anteriores.
+    @Column({ name: 'token_valid_from', type: 'timestamp', nullable: true })
+    tokenValidFrom: Date | null;
+
     @OneToMany(() => SolicitudAcceso, (s) => s.revisor)
     solicitudesRevisadas: SolicitudAcceso[];
 }

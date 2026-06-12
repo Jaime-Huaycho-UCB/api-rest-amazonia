@@ -10,8 +10,8 @@ import { UpdateUsuarioDto } from '../dto/update-usuario.dto';
 import { UpdatePerfilPropioDto } from '../dto/update-perfil-propio.dto';
 import { TokenResponseDto } from '../dto/token-response.dto';
 import { UsuarioResponseDto } from '../dto/usuario-response.dto';
-import { PaginationParamsDto } from 'src/shared/dto/pagination-params.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { FilterUsuariosDto } from '../dto/filter-usuarios.dto';
 import { RoleEnum } from 'src/shared/enums/role.enum';
 import { MyJwtConfig } from 'src/infrastructure/config/services/jwt.config';
 import {
@@ -111,15 +111,42 @@ export class AuthService {
         return this.toResponse(guardado);
     }
 
-    async findAll(params: PaginationParamsDto): Promise<PaginationResponseDto<UsuarioResponseDto>> {
+    async findAll(params: FilterUsuariosDto): Promise<PaginationResponseDto<UsuarioResponseDto>> {
         const { page, limit } = params;
-        const [usuarios, total] = await this.usuarioRepo.findAndCount({
-            skip: (page - 1) * limit,
-            take: limit,
-            order: { createdAt: 'DESC' },
-        });
+
+        const qb = this.usuarioRepo
+            .createQueryBuilder('u')
+            .orderBy('u.createdAt', 'DESC');
+
+        if (params.rol !== undefined) {
+            qb.andWhere('u.rol = :rol', { rol: params.rol });
+        }
+
+        if (params.activo !== undefined) {
+            qb.andWhere('u.activo = :activo', { activo: params.activo });
+        }
+
+        if (params.search) {
+            qb.andWhere(
+                '(u.nombre ILIKE :search OR u.email ILIKE :search)',
+                { search: `%${params.search}%` },
+            );
+        }
+
+        const [usuarios, total] = await qb
+            .skip((page - 1) * limit)
+            .take(limit)
+            .getManyAndCount();
 
         return buildPagination(usuarios.map((u) => this.toResponse(u)), total, page, limit);
+    }
+
+    async findOneById(id: number): Promise<UsuarioResponseDto> {
+        const usuario = await this.usuarioRepo.findOne({ where: { id } });
+        if (!usuario) {
+            throw new MyNotFoundException('Usuario no encontrado');
+        }
+        return this.toResponse(usuario);
     }
 
     async update(id: number, dto: UpdateUsuarioDto, currentUser: JwtPayload): Promise<UsuarioResponseDto> {
@@ -133,8 +160,15 @@ export class AuthService {
         }
 
         if (dto.nombre !== undefined) usuario.nombre = dto.nombre;
-        if (dto.activo !== undefined) usuario.activo = dto.activo;
         if (dto.rol !== undefined) usuario.rol = dto.rol;
+
+        if (dto.activo !== undefined) {
+            // Si se desactiva la cuenta, revocar todos los tokens anteriores
+            if (dto.activo === false && usuario.activo === true) {
+                usuario.tokenValidFrom = new Date();
+            }
+            usuario.activo = dto.activo;
+        }
 
         const actualizado = await this.usuarioRepo.save(usuario);
         return this.toResponse(actualizado);
@@ -154,7 +188,7 @@ export class AuthService {
     async changePassword(currentPasswordPlain: string, newPasswordPlain: string, currentUser: JwtPayload): Promise<void> {
         const usuario = await this.usuarioRepo.findOne({
             where: { id: currentUser.sub },
-            select: ['id', 'passwordHash'],
+            select: ['id', 'passwordHash', 'tokenValidFrom'],
         });
         if (!usuario) {
             throw new MyNotFoundException('Usuario no encontrado');
@@ -167,6 +201,8 @@ export class AuthService {
         }
 
         usuario.passwordHash = await hashPassword(newPasswordPlain);
+        // Revocar todos los tokens anteriores al cambio de contraseña
+        usuario.tokenValidFrom = new Date();
         await this.usuarioRepo.save(usuario);
     }
 

@@ -19,7 +19,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed:superadmin": "ts-node -r tsconfig-paths/register scripts/seed-superadmin.ts",
-    "migrate:auth": "ts-node -r tsconfig-paths/register scripts/migrate-auth-tables.ts"
+    "migrate:auth": "ts-node -r tsconfig-paths/register scripts/migrate-auth-tables.ts",
+    "migrate:images": "ts-node -r tsconfig-paths/register scripts/migrate-images.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -28,6 +29,7 @@
     "@nestjs/jwt": "^11.0.1",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/serve-static": "^5.0.5",
     "@nestjs/swagger": "^11.2.1",
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^11.0.0",
@@ -41,6 +43,7 @@
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "sharp": "^0.35.1",
     "typeorm": "^0.3.27"
   },
   "devDependencies": {
@@ -55,8 +58,10 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/joi": "^17.2.2",
+    "@types/multer": "^2.1.0",
     "@types/node": "^22.10.7",
     "@types/passport-jwt": "^4.0.1",
+    "@types/sharp": "^0.31.1",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",

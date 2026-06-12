@@ -11,6 +11,7 @@ import { SolicitudesController } from './controllers/solicitudes.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
+import { OptionalJwtAuthGuard } from './guards/optional-jwt.guard';
 import { MyJwtConfig } from 'src/infrastructure/config/services/jwt.config';
 
 @Module({
@@ -29,7 +30,7 @@ import { MyJwtConfig } from 'src/infrastructure/config/services/jwt.config';
         }),
     ],
     controllers: [AuthController, SolicitudesController],
-    providers: [AuthService, SolicitudesService, JwtStrategy, JwtAuthGuard, RolesGuard],
-    exports: [JwtAuthGuard, RolesGuard, AuthService],
+    providers: [AuthService, SolicitudesService, JwtStrategy, JwtAuthGuard, RolesGuard, OptionalJwtAuthGuard],
+    exports: [JwtAuthGuard, RolesGuard, OptionalJwtAuthGuard, AuthService],
 })
 export class AuthModule {}

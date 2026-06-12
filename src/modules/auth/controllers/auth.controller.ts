@@ -29,8 +29,8 @@ import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../decorators/roles.decorator';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { RoleEnum } from 'src/shared/enums/role.enum';
-import { PaginationParamsDto } from 'src/shared/dto/pagination-params.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { FilterUsuariosDto } from '../dto/filter-usuarios.dto';
 import {
     OkRes,
     CreatedRes,
@@ -229,25 +229,53 @@ export class AuthController {
     @Roles(RoleEnum.Admin)
     @ApiBearerAuth('access-token')
     @ApiOperation({
-        summary: 'Listar todos los usuarios',
+        summary: 'Listar usuarios con filtros y paginación',
         description:
             '🔒 **Requiere rol: Admin o Superadmin.**\n\n' +
-            'Devuelve el listado paginado de todos los usuarios registrados en el sistema.\n\n' +
-            '**Paginación:** usa `?page=1&limit=10`. El límite máximo es 100 por petición.\n\n' +
-            '**Nota:** actualmente la lista no soporta filtros por `rol`, `activo` o `search`. ' +
-            'Esta funcionalidad está pendiente de implementación (ver backlog).',
+            'Devuelve el listado paginado de usuarios con filtros opcionales.\n\n' +
+            '**Filtros disponibles:**\n' +
+            '- `?rol=1` — Superadmin | `?rol=2` — Admin | `?rol=3` — Investigador\n' +
+            '- `?activo=true` — solo activos | `?activo=false` — solo inactivos\n' +
+            '- `?search=texto` — busca por nombre o email (parcial, insensible a mayúsculas)\n\n' +
+            '**Ejemplos:** `?rol=3&activo=true` → investigadores activos · `?search=Juan` → usuarios que contienen "Juan" en nombre o email\n\n' +
+            '**Paginación:** `?page=1&limit=10`. Límite máximo: 100.',
     })
-    @ApiQuery({ name: 'page', required: false, type: Number, description: 'Número de página (default: 1)', example: 1 })
-    @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Resultados por página (default: 10, máximo: 100)', example: 10 })
-    @ApiOkResponse({
-        type: PaginationResponseDto,
-        description: 'Listado paginado de usuarios con has_next y has_prev.',
-    })
+    @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+    @ApiQuery({ name: 'limit', required: false, type: Number, example: 10, description: 'Máximo 100' })
+    @ApiQuery({ name: 'rol', required: false, enum: RoleEnum, description: '1=Superadmin, 2=Admin, 3=Investigador' })
+    @ApiQuery({ name: 'activo', required: false, type: Boolean, description: 'true=activos, false=inactivos' })
+    @ApiQuery({ name: 'search', required: false, type: String, description: 'Busca en nombre y email' })
+    @ApiOkResponse({ type: PaginationResponseDto, description: 'Listado paginado de usuarios.' })
     @ApiUnauthorizedResponse(SwaggerUnauthorizedCommon())
     @ApiForbiddenResponse(SwaggerForbiddenCommon())
-    async findAll(@Query() params: PaginationParamsDto, @Res() res: Response) {
+    async findAll(@Query() params: FilterUsuariosDto, @Res() res: Response) {
         const result = await this.authService.findAll(params);
         return OkRes(res, result);
+    }
+
+    @Get('usuarios/:id')
+    @ApiTags('Auth — Admin')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RoleEnum.Admin)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: 'Obtener detalle de un usuario por ID',
+        description:
+            '🔒 **Requiere rol: Admin o Superadmin.**\n\n' +
+            'Devuelve el perfil completo de un usuario específico.\n\n' +
+            '**Campos devueltos:** `id`, `email`, `nombre`, `rol`, `activo`, `fechaExpiracion`, `createdAt`, `updatedAt`.\n\n' +
+            '**Nunca se devuelve:** `passwordHash` ni `tokenValidFrom`.',
+    })
+    @ApiOkResponse({ type: UsuarioResponseDto, description: 'Perfil del usuario solicitado.' })
+    @ApiUnauthorizedResponse(SwaggerUnauthorizedCommon())
+    @ApiForbiddenResponse(SwaggerForbiddenCommon())
+    @ApiNotFoundResponse(SwaggerNotFoundCommon())
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+        @Res() res: Response,
+    ) {
+        const result = await this.authService.findOneById(id);
+        return OkRes(res, { usuario: result });
     }
 
     @Patch('usuarios/:id')

@@ -27,37 +27,37 @@ npm run migrate:auth   # crea tablas si no existen
 npm run seed:superadmin
 
 # 2. Admin
-curl -s -X POST http://localhost:3000/api/auth/login \
+curl -s -X POST http://localhost:3333/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"superadmin@kaaiya.test","password":"SuperPass1!"}' | grep accessToken
 
-curl -s -X POST http://localhost:3000/api/auth/register \
+curl -s -X POST http://localhost:3333/api/auth/register \
   -H "Authorization: Bearer <SA_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@kaaiya.test","nombre":"Admin Test","password":"AdminPass1!","rol":2}'
 
 # 3. Investigador vigente (vía solicitud → aprobar como Admin)
-curl -s -X POST http://localhost:3000/api/auth/solicitar-acceso \
+curl -s -X POST http://localhost:3333/api/auth/solicitar-acceso \
   -H "Content-Type: application/json" \
   -d '{"nombreSolicitante":"Investigador Test","emailSolicitante":"investigador@kaaiya.test","institucion":"UMSA","proposito":"Pruebas de QA para el modulo de autenticacion de la plataforma Kaa Iya"}'
 
-curl -s -X PATCH http://localhost:3000/api/auth/solicitudes/1/aprobar \
+curl -s -X PATCH http://localhost:3333/api/auth/solicitudes/1/aprobar \
   -H "Authorization: Bearer <ADMIN_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{"fechaExpiracionAcceso":"2030-01-01T00:00:00Z","passwordTemporal":"InvPass2026!"}'
 
 # 4. Investigador expirado (fecha pasada)
-curl -s -X POST http://localhost:3000/api/auth/solicitar-acceso \
+curl -s -X POST http://localhost:3333/api/auth/solicitar-acceso \
   -H "Content-Type: application/json" \
   -d '{"nombreSolicitante":"Investigador Expirado","emailSolicitante":"inv-expirado@kaaiya.test","institucion":"UCB","proposito":"Pruebas de QA para verificar el comportamiento de accesos expirados en el sistema"}'
 
-curl -s -X PATCH http://localhost:3000/api/auth/solicitudes/2/aprobar \
+curl -s -X PATCH http://localhost:3333/api/auth/solicitudes/2/aprobar \
   -H "Authorization: Bearer <ADMIN_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{"fechaExpiracionAcceso":"2020-01-01T00:00:00Z","passwordTemporal":"InvPass2026!"}'
 
 # 5. Usuario inactivo
-curl -s -X POST http://localhost:3000/api/auth/register \
+curl -s -X POST http://localhost:3333/api/auth/register \
   -H "Authorization: Bearer <SA_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{"email":"inactivo@kaaiya.test","nombre":"Usuario Inactivo","password":"InacPass1!","rol":2}'

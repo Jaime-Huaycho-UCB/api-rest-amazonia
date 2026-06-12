@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateProyectoDto } from '../dto/create-proyecto.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Proyecto } from '../entities/proyecto.entity';
+import { ProyectoImagen } from '../entities/proyecto-imagen.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { TiposProyectosService } from 'src/modules/catalogos/tipos-proyectos/services/tipos-proyectos.service';
 import { LocalidadesProyectosService } from '../../localidades-proyectos/services/localidades-proyectos.service';
@@ -11,23 +12,31 @@ import { ConservacionAnimalesService } from 'src/modules/gestion-conservacion/co
 import { AreasEnum } from 'src/shared/enums/areas.enum';
 import { CreateConservacionDto } from '../dto/create-conservacion.dto';
 import { CreateComunidadesIndigenasAreaDto } from 'src/modules/gestion-comunidades/comunidades-indigenas-areas/dto/create-comunidades-indigenas-area.dto';
-import { MyBadRequestException } from 'src/shared/exceptions';
+import { MyBadRequestException, MyNotFoundException } from 'src/shared/exceptions';
 import { ConservacionAgricolasService } from 'src/modules/gestion-conservacion/conservacion-agricolas/services/conservacion-agricolas.service';
 import { ComunidadesIndigenasAreasService } from 'src/modules/gestion-comunidades/comunidades-indigenas-areas/services/comunidades-indigenas-areas.service';
 import { buildPagination } from 'src/shared/utils';
+import { UploadService } from 'src/shared/upload/upload.service';
+
+interface CacheEntry { data: unknown; expiresAt: number; }
 
 @Injectable()
 export class ProyectosService {
+	private readonly cache = new Map<string, CacheEntry>();
+
 	constructor(
 		@InjectRepository(Proyecto)
 		private readonly proyectoRepository: Repository<Proyecto>,
+		@InjectRepository(ProyectoImagen)
+		private readonly imagenRepository: Repository<ProyectoImagen>,
 		private readonly tiposProyectosService: TiposProyectosService,
 		private readonly localidadesProyectosService: LocalidadesProyectosService,
 		private readonly ayudasProyectosService: AyudasProyectosService,
 		private readonly actoresProyectosService: ActoresProyectosService,
 		private readonly conservacionAnimalesService: ConservacionAnimalesService,
 		private readonly conservacionAgricolasService: ConservacionAgricolasService,
-		private readonly comunidadesIndigenasAreasService: ComunidadesIndigenasAreasService
+		private readonly comunidadesIndigenasAreasService: ComunidadesIndigenasAreasService,
+		private readonly uploadService: UploadService,
 	){}
 
 	async findOne(id: number) {
@@ -45,17 +54,20 @@ export class ProyectosService {
 					municipio: true,
 					comunidad: true,
 				},
+				imagenes: true,
+				proyectosEmpresas: { empresa: true },
+				proyectosOrganizaciones: { organizacion: true },
 			},
 		});
 		if (!proyecto) {
-			throw new MyBadRequestException(`Proyecto con id ${id} no encontrado`);
+			throw new MyNotFoundException(`Proyecto con id ${id} no encontrado`);
 		}
 		return proyecto;
 	}
 
-	async create(data: CreateProyectoDto,manager?: EntityManager){
-		const repo = manager ? manager.getRepository(Proyecto) : this.proyectoRepository
-		const tipoProyecto = await this.tiposProyectosService.findOneOrCreate(data.tipo,manager)
+	async create(data: CreateProyectoDto, manager?: EntityManager){
+		const repo = manager ? manager.getRepository(Proyecto) : this.proyectoRepository;
+		const tipoProyecto = await this.tiposProyectosService.findOneOrCreate(data.tipo, manager);
 		const proyecto = new Proyecto();
 		proyecto.nombre = data.nombre;
 		proyecto.descripcion = data.descripcion;
@@ -66,38 +78,42 @@ export class ProyectosService {
 		proyecto.idArea = data.area;
 		proyecto.idTipo = tipoProyecto.id;
 		const proyectoSaved = await repo.save(proyecto);
-		await this.localidadesProyectosService.createMany(proyecto.id,data.municipiosTrabajo,manager);
-		await this.ayudasProyectosService.createMany(proyectoSaved.id,data.ayudas,manager);
-		await this.actoresProyectosService.createMany(proyectoSaved.id,data.actores,manager);
+		await this.localidadesProyectosService.createMany(proyecto.id, data.municipiosTrabajo, manager);
+		await this.ayudasProyectosService.createMany(proyectoSaved.id, data.ayudas, manager);
+		await this.actoresProyectosService.createMany(proyectoSaved.id, data.actores, manager);
 		switch (proyectoSaved.idArea) {
 			case AreasEnum.conservacion:
-				await this.createConservacion(proyectoSaved.id,data.conservacion,manager);
+				await this.createConservacion(proyectoSaved.id, data.conservacion, manager);
 				break;
 			case AreasEnum.desarrollo:
-				await this.createDesarrollo(proyectoSaved.id,data.desarrollo,manager);
+				await this.createDesarrollo(proyectoSaved.id, data.desarrollo, manager);
 				break;
 			default:
-				throw new MyBadRequestException('Ingrese una area especifica del proyecto')
-				break;
+				throw new MyBadRequestException('Ingrese una area especifica del proyecto');
 		}
-		return proyectoSaved
+		return proyectoSaved;
 	}
 
-	async createConservacion(idProyecto:number, data?: CreateConservacionDto,manager?: EntityManager){
+	async createConservacion(idProyecto: number, data?: CreateConservacionDto, manager?: EntityManager){
 		if (!data){
-			throw new MyBadRequestException('Si elije un proyecto del area de Conservacion, debe tener este apartado obligatorio')
+			throw new MyBadRequestException('Si elije un proyecto del area de Conservacion, debe tener este apartado obligatorio');
 		}
-		await this.conservacionAnimalesService.createMany(idProyecto,data.especies,manager);
-		await this.conservacionAgricolasService.createMany(idProyecto,data.practicasAgricolas,manager)
-	}
-	async createDesarrollo(idProyecto: number, data?: CreateComunidadesIndigenasAreaDto,manager?: EntityManager){
-		if (!data){
-			throw new MyBadRequestException('Si elije un proyecto del area de Desarrollo, debe tener este apartado obligatorio')
-		}
-		await this.comunidadesIndigenasAreasService.createMany(idProyecto,data,manager);
+		await this.conservacionAnimalesService.createMany(idProyecto, data.especies, manager);
+		await this.conservacionAgricolasService.createMany(idProyecto, data.practicasAgricolas, manager);
 	}
 
-	async findAll(params?: { page?: number; limit?: number; area?: number; departamento?: number; tipo?: number; anio?: number; search?: string; sort?: string }) {
+	async createDesarrollo(idProyecto: number, data?: CreateComunidadesIndigenasAreaDto, manager?: EntityManager){
+		if (!data){
+			throw new MyBadRequestException('Si elije un proyecto del area de Desarrollo, debe tener este apartado obligatorio');
+		}
+		await this.comunidadesIndigenasAreasService.createMany(idProyecto, data, manager);
+	}
+
+	async findAll(params?: {
+		page?: number; limit?: number; area?: number; departamento?: number;
+		tipo?: number; anio?: number; municipio?: number; anio_desde?: number;
+		anio_hasta?: number; search?: string; sort?: string;
+	}) {
 		const page = params?.page ?? 1;
 		const limit = params?.limit ?? 10;
 
@@ -115,26 +131,32 @@ export class ProyectosService {
 			.leftJoinAndSelect('p.localidadesProyectos', 'localidades')
 			.leftJoinAndSelect('localidades.municipio', 'municipio')
 			.leftJoinAndSelect('municipio.departamento', 'departamento')
+			.leftJoinAndSelect('p.imagenes', 'imagenes')
 			.orderBy(orderField, orderDir);
 
 		if (params?.search) {
-			qb.andWhere('p.nombre ILIKE :search', { search: `%${params.search}%` });
+			qb.andWhere('(p.nombre ILIKE :search OR p.descripcion ILIKE :search)', { search: `%${params.search}%` });
 		}
-
 		if (params?.area) {
 			qb.andWhere('p.idArea = :area', { area: params.area });
 		}
-
 		if (params?.tipo) {
 			qb.andWhere('p.idTipo = :tipo', { tipo: params.tipo });
 		}
-
 		if (params?.anio) {
 			qb.andWhere('p.anioInicio = :anio', { anio: params.anio });
 		}
-
+		if (params?.anio_desde) {
+			qb.andWhere('p.anioInicio >= :anio_desde', { anio_desde: params.anio_desde });
+		}
+		if (params?.anio_hasta) {
+			qb.andWhere('(p.anioFin <= :anio_hasta OR p.anioFin IS NULL)', { anio_hasta: params.anio_hasta });
+		}
 		if (params?.departamento) {
 			qb.andWhere('departamento.id = :departamento', { departamento: params.departamento });
+		}
+		if (params?.municipio) {
+			qb.andWhere('municipio.id = :municipio', { municipio: params.municipio });
 		}
 
 		const [proyectos, total] = await qb
@@ -143,5 +165,105 @@ export class ProyectosService {
 			.getManyAndCount();
 
 		return buildPagination(proyectos, total, page, limit);
+	}
+
+	async findFiltrosDisponibles() {
+		const cached = this.cache.get('filtros');
+		if (cached && Date.now() < cached.expiresAt) return cached.data;
+
+		const [tipos, departamentos, municipios, aniosRaw] = await Promise.all([
+			this.proyectoRepository
+				.createQueryBuilder('p')
+				.innerJoin('p.tipo', 'tipo')
+				.select(['tipo.id AS id', 'tipo.nombre AS nombre'])
+				.where('tipo.id IS NOT NULL')
+				.groupBy('tipo.id, tipo.nombre')
+				.orderBy('tipo.nombre', 'ASC')
+				.getRawMany(),
+			this.proyectoRepository
+				.createQueryBuilder('p')
+				.innerJoin('p.localidadesProyectos', 'lp')
+				.innerJoin('lp.municipio', 'municipio')
+				.innerJoin('municipio.departamento', 'dep')
+				.select(['dep.id AS id', 'dep.nombre AS nombre'])
+				.groupBy('dep.id, dep.nombre')
+				.orderBy('dep.nombre', 'ASC')
+				.getRawMany(),
+			this.proyectoRepository
+				.createQueryBuilder('p')
+				.innerJoin('p.localidadesProyectos', 'lp')
+				.innerJoin('lp.municipio', 'mun')
+				.select(['mun.id AS id', 'mun.nombre AS nombre', 'mun.idDepartamento AS "idDepartamento"'])
+				.groupBy('mun.id, mun.nombre, mun.idDepartamento')
+				.orderBy('mun.nombre', 'ASC')
+				.getRawMany(),
+			this.proyectoRepository
+				.createQueryBuilder('p')
+				.select('p.anioInicio', 'anio')
+				.where('p.anioInicio IS NOT NULL')
+				.distinct(true)
+				.orderBy('p.anioInicio', 'ASC')
+				.getRawMany(),
+		]);
+
+		const areas = [
+			{ id: AreasEnum.conservacion, nombre: 'Conservación' },
+			{ id: AreasEnum.desarrollo, nombre: 'Desarrollo Comunitario' },
+		];
+		const anios = aniosRaw.map((r) => r.anio as number);
+
+		const result = { areas, tipos, departamentos, municipios, anios };
+		this.cache.set('filtros', { data: result, expiresAt: Date.now() + 300_000 });
+		return result;
+	}
+
+	// --- Image management ---
+
+	async uploadImagenPrincipal(id: number, file: Express.Multer.File): Promise<{ imagenPrincipalUrl: string }> {
+		const proyecto = await this.proyectoRepository.findOne({ where: { id }, select: ['id', 'imagenPrincipalPath'] });
+		if (!proyecto) throw new MyNotFoundException(`Proyecto con id ${id} no encontrado`);
+
+		if (proyecto.imagenPrincipalPath) {
+			await this.uploadService.deleteImage(proyecto.imagenPrincipalPath);
+		}
+
+		const { url, path } = await this.uploadService.saveImage(file.buffer, 'proyectos/principal', 1200, 800);
+		await this.proyectoRepository.update(id, { imagenPrincipalUrl: url, imagenPrincipalPath: path });
+		this.cache.clear();
+		return { imagenPrincipalUrl: url };
+	}
+
+	async deleteImagenPrincipal(id: number): Promise<void> {
+		const proyecto = await this.proyectoRepository.findOne({ where: { id }, select: ['id', 'imagenPrincipalPath'] });
+		if (!proyecto) throw new MyNotFoundException(`Proyecto con id ${id} no encontrado`);
+		if (proyecto.imagenPrincipalPath) {
+			await this.uploadService.deleteImage(proyecto.imagenPrincipalPath);
+		}
+		await this.proyectoRepository.update(id, { imagenPrincipalUrl: null, imagenPrincipalPath: null });
+		this.cache.clear();
+	}
+
+	async uploadGaleria(id: number, file: Express.Multer.File, descripcion?: string): Promise<ProyectoImagen> {
+		const proyecto = await this.proyectoRepository.findOne({ where: { id }, select: ['id'] });
+		if (!proyecto) throw new MyNotFoundException(`Proyecto con id ${id} no encontrado`);
+
+		const { url, path } = await this.uploadService.saveImage(file.buffer, `proyectos/galeria/${id}`, 1200, 800);
+		const imagen = this.imagenRepository.create({ idProyecto: id, url, path, descripcion: descripcion ?? null, orden: 0 });
+		return this.imagenRepository.save(imagen);
+	}
+
+	async deleteGaleriaImagen(id: number, imagenId: string): Promise<void> {
+		const imagen = await this.imagenRepository.findOne({ where: { id: imagenId, idProyecto: id } });
+		if (!imagen) throw new MyNotFoundException(`Imagen no encontrada`);
+		await this.uploadService.deleteImage(imagen.path);
+		await this.imagenRepository.delete(imagenId);
+	}
+
+	async reordenarGaleria(id: number, orden: { id: string; orden: number }[]): Promise<void> {
+		const proyecto = await this.proyectoRepository.findOne({ where: { id }, select: ['id'] });
+		if (!proyecto) throw new MyNotFoundException(`Proyecto con id ${id} no encontrado`);
+		await Promise.all(
+			orden.map((item) => this.imagenRepository.update({ id: item.id, idProyecto: id }, { orden: item.orden })),
+		);
 	}
 }

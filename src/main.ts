@@ -19,7 +19,7 @@ async function bootstrap() {
 	app.setGlobalPrefix('api')
 
 	if (config.swagger) {
-		const config = new DocumentBuilder()
+		const swaggerConfig = new DocumentBuilder()
 			.setTitle('Kaa Iya — Backend API')
 			.setDescription(
 				'API REST de la plataforma **Kaa Iya** ("Espíritu del Bosque"), para gestionar y visibilizar iniciativas sostenibles en la Amazonía boliviana.\n\n' +
@@ -76,7 +76,7 @@ async function bootstrap() {
 				`empresas u organizaciones (triggers automáticos en PostgreSQL).`,
 			)
 			.build();
-		const document = SwaggerModule.createDocument(app, config);
+		const document = SwaggerModule.createDocument(app, swaggerConfig);
 		SwaggerModule.setup('api/documentation', app, document);
 	}
 

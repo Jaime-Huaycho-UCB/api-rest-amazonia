@@ -59,6 +59,39 @@ export class FilterProyectosDto extends PaginationParamsDto {
     search?: string;
 
     @ApiPropertyOptional({
+        description: 'Filtrar por ID de municipio de trabajo del proyecto',
+        type: Number,
+        example: 10,
+    })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt({ message: "El parámetro 'municipio' debe ser un número entero" })
+    @Min(1, { message: "El parámetro 'municipio' debe ser mayor o igual a 1" })
+    municipio?: number;
+
+    @ApiPropertyOptional({
+        description: 'Filtrar proyectos que iniciaron desde este año (inclusive)',
+        type: Number,
+        example: 2020,
+    })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt({ message: "El parámetro 'anio_desde' debe ser un número entero" })
+    @Min(1900, { message: "El parámetro 'anio_desde' debe ser un año válido" })
+    anio_desde?: number;
+
+    @ApiPropertyOptional({
+        description: 'Filtrar proyectos que terminaron hasta este año (inclusive). Incluye proyectos activos (sin anio_fin)',
+        type: Number,
+        example: 2024,
+    })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt({ message: "El parámetro 'anio_hasta' debe ser un número entero" })
+    @Min(1900, { message: "El parámetro 'anio_hasta' debe ser un año válido" })
+    anio_hasta?: number;
+
+    @ApiPropertyOptional({
         description: "Ordenar resultados. Formato: 'campo:asc' o 'campo:desc'. Campos válidos: nombre, anioInicio",
         type: String,
         example: 'anioInicio:desc',

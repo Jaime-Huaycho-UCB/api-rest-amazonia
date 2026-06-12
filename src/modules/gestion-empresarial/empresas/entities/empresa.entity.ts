@@ -25,6 +25,12 @@ export class Empresa {
     @Column({ name: 'anio_inicio_apoyo', type: 'int' })
     anioInicioApoyo: number;
 
+    @Column({ name: 'logo_url', type: 'text', nullable: true })
+    logoUrl: string | null;
+
+    @Column({ name: 'logo_path', type: 'text', nullable: true })
+    logoPath: string | null;
+
     @ManyToOne(() => FormaJuridica, (forma) => forma.empresas)
     @JoinColumn({ name: 'id_forma_juridica' })
     formaJuridica: FormaJuridica;

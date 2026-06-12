@@ -24,6 +24,12 @@ export class Organizacion {
     @Column({ name: 'anio_inicio_trabajo', type: 'int' })
     anioInicioTrabajo: number;
 
+    @Column({ name: 'logo_url', type: 'text', nullable: true })
+    logoUrl: string | null;
+
+    @Column({ name: 'logo_path', type: 'text', nullable: true })
+    logoPath: string | null;
+
     @ManyToOne(() => TipoOrganizacion, (tipo) => tipo.organizaciones)
     @JoinColumn({ name: 'id_tipo' })
     tipo: TipoOrganizacion;

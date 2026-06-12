@@ -9,6 +9,8 @@ import { ApoyosEmpresasModule } from '../apoyos-empresas/apoyos-empresas.module'
 import { OrganizacionesEmpresasModule } from 'src/modules/gestion-organizacional/organizaciones-empresas/organizaciones-empresas.module';
 import { MotivosEmpresasModule } from '../motivos-empresas/motivos-empresas.module';
 import { OdsEmpresasModule } from '../ods-empresas/ods-empresas.module';
+import { AuthModule } from 'src/modules/auth/auth.module';
+import { UploadModule } from 'src/shared/upload/upload.module';
 
 @Module({
 	imports: [
@@ -19,6 +21,8 @@ import { OdsEmpresasModule } from '../ods-empresas/ods-empresas.module';
 		OrganizacionesEmpresasModule,
 		MotivosEmpresasModule,
 		OdsEmpresasModule,
+		AuthModule,
+		UploadModule,
 	],
 	controllers: [EmpresasController],
 	providers: [EmpresasService],
