@@ -34,11 +34,13 @@ import { ConservacionAgricolasModule } from './modules/gestion-conservacion/cons
 import { ComunidadesIndigenasAreasModule } from './modules/gestion-comunidades/comunidades-indigenas-areas/comunidades-indigenas-areas.module';
 import { ComunidadesMunicipiosModule } from './modules/ubicaciones-geograficas/comunidades-municipios/comunidades-municipios.module';
 import { FormulariosModule } from './app/formularios/formularios.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
 	imports: [
 		MyConfigModule,
 		MyDatabaseModule,
+		AuthModule,
 		TiposOrganizacionesModule,
 		AreasDesarrolloModule,
 		PracticasAgricolasModule,

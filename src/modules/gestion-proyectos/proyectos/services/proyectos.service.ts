@@ -73,18 +73,52 @@ export class ProyectosService {
 		await this.comunidadesIndigenasAreasService.createMany(idProyecto,data,manager);
 	}
 
-	async findAll(){
-		const proyectos = await this.proyectoRepository.find({
-			relations: {
-				area: true,
-				tipo: true,
-				ayudas: true,
-				actoresMunicipales: true,
-				especiesAnimales: true,
-				practicasAgricolas: true,
-				areasDesarrollo: true,
-			}
-		})
-		return proyectos;
+	async findAll(params?: { page?: number; limit?: number; area?: number; departamento?: number; tipo?: number; anio?: number; search?: string }) {
+		const page = params?.page ?? 1;
+		const limit = params?.limit ?? 10;
+
+		const qb = this.proyectoRepository
+			.createQueryBuilder('p')
+			.leftJoinAndSelect('p.area', 'area')
+			.leftJoinAndSelect('p.tipo', 'tipo')
+			.leftJoinAndSelect('p.ayudas', 'ayudas')
+			.leftJoinAndSelect('p.actoresMunicipales', 'actoresMunicipales')
+			.leftJoinAndSelect('p.localidadesProyectos', 'localidades')
+			.leftJoinAndSelect('localidades.municipio', 'municipio')
+			.leftJoinAndSelect('municipio.departamento', 'departamento')
+			.orderBy('p.id', 'ASC');
+
+		if (params?.search) {
+			qb.andWhere('p.nombre ILIKE :search', { search: `%${params.search}%` });
+		}
+
+		if (params?.area) {
+			qb.andWhere('p.idArea = :area', { area: params.area });
+		}
+
+		if (params?.tipo) {
+			qb.andWhere('p.idTipo = :tipo', { tipo: params.tipo });
+		}
+
+		if (params?.anio) {
+			qb.andWhere('p.anioInicio = :anio', { anio: params.anio });
+		}
+
+		if (params?.departamento) {
+			qb.andWhere('departamento.id = :departamento', { departamento: params.departamento });
+		}
+
+		const [proyectos, total] = await qb
+			.skip((page - 1) * limit)
+			.take(limit)
+			.getManyAndCount();
+
+		return {
+			data: proyectos,
+			page,
+			limit,
+			pages: Math.ceil(total / limit),
+			total,
+		};
 	}
 }

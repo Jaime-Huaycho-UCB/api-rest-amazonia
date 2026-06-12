@@ -18,6 +18,32 @@ export class DepartamentosService {
 		return departamentos;
 	}
 
+	async findAllFiltered(params?: { page?: number; limit?: number; amazonico?: boolean }) {
+		const page = params?.page ?? 1;
+		const limit = params?.limit ?? 50;
+
+		const qb = this.departamentoRepository
+			.createQueryBuilder('d')
+			.orderBy('d.nombre', 'ASC');
+
+		if (params?.amazonico !== undefined) {
+			qb.andWhere('d.amazonico = :amazonico', { amazonico: params.amazonico });
+		}
+
+		const [departamentos, total] = await qb
+			.skip((page - 1) * limit)
+			.take(limit)
+			.getManyAndCount();
+
+		return {
+			data: departamentos,
+			page,
+			limit,
+			pages: Math.ceil(total / limit),
+			total,
+		};
+	}
+
 	async findAllByIds(ids: number[]){
 		const departamentos = await this.departamentoRepository.find({
 			where: {

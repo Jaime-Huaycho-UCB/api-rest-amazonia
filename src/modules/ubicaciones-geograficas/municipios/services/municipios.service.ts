@@ -23,6 +23,38 @@ export class MunicipiosService {
 		return municipios;
 	}
 
+	async findAllFiltered(params?: { page?: number; limit?: number; departamento?: number; search?: string }) {
+		const page = params?.page ?? 1;
+		const limit = params?.limit ?? 50;
+
+		const qb = this.municipioRepository
+			.createQueryBuilder('m')
+			.leftJoinAndSelect('m.departamento', 'departamento')
+			.leftJoinAndSelect('m.comunidadesIndigenas', 'comunidades')
+			.orderBy('m.nombre', 'ASC');
+
+		if (params?.search) {
+			qb.andWhere('m.nombre ILIKE :search', { search: `%${params.search}%` });
+		}
+
+		if (params?.departamento) {
+			qb.andWhere('m.idDepartamento = :departamento', { departamento: params.departamento });
+		}
+
+		const [municipios, total] = await qb
+			.skip((page - 1) * limit)
+			.take(limit)
+			.getManyAndCount();
+
+		return {
+			data: municipios,
+			page,
+			limit,
+			pages: Math.ceil(total / limit),
+			total,
+		};
+	}
+
 	async findAllByIds(ids: number[]){
 		const municipios = await this.municipioRepository.find({
 			where: {

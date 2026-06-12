@@ -44,28 +44,39 @@ export class EmpresasService {
 		return empresaSaved;
 	}
 
-	async findAll(){
-		const empresas = await this.empresaRepository.find({
-			select: {
-				id: true,
-				nombre: true,
-				formaJuridica: true,
-				anioInicioApoyo: true,
-				departamentos: true,
-				apoyos: true,
-				organizacionesEmpresas: true,
-				motivos: true,
-				ods: true
-			},
-			relations: {
-				formaJuridica: true,
-				departamentos: true,
-				apoyos: true,
-				organizacionesEmpresas: true,
-				motivos: true,
-				ods: true
-			}
-		})
-		return empresas;
+	async findAll(params?: { page?: number; limit?: number; departamento?: number; search?: string }) {
+		const page = params?.page ?? 1;
+		const limit = params?.limit ?? 10;
+
+		const qb = this.empresaRepository
+			.createQueryBuilder('e')
+			.leftJoinAndSelect('e.formaJuridica', 'formaJuridica')
+			.leftJoinAndSelect('e.departamentos', 'departamentos')
+			.leftJoinAndSelect('e.apoyos', 'apoyos')
+			.leftJoinAndSelect('e.motivos', 'motivos')
+			.leftJoinAndSelect('e.ods', 'ods')
+			.leftJoinAndSelect('e.organizacionesEmpresas', 'organizacionesEmpresas')
+			.orderBy('e.id', 'ASC');
+
+		if (params?.search) {
+			qb.andWhere('e.nombre ILIKE :search', { search: `%${params.search}%` });
+		}
+
+		if (params?.departamento) {
+			qb.andWhere('departamentos.id = :departamento', { departamento: params.departamento });
+		}
+
+		const [empresas, total] = await qb
+			.skip((page - 1) * limit)
+			.take(limit)
+			.getManyAndCount();
+
+		return {
+			data: empresas,
+			page,
+			limit,
+			pages: Math.ceil(total / limit),
+			total,
+		};
 	}
 }

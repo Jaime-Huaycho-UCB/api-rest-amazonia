@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsInt, Min, IsOptional } from "class-validator";
+import { IsInt, Min, IsOptional, Max } from "class-validator";
 
 export class PaginationParamsDto {
     @ApiPropertyOptional({
@@ -18,10 +18,12 @@ export class PaginationParamsDto {
         description: "Cantidad de resultados por página. Si no se envía, se toma por defecto el valor 10.",
         example: 20,
         default: 10,
+        maximum: 100,
     })
     @IsOptional()
     @Type(() => Number)
     @IsInt({ message: "El parámetro 'limit' debe ser un número entero" })
     @Min(1, { message: "El parámetro 'limit' debe ser mayor o igual a 1" })
+    @Max(100, { message: "El parámetro 'limit' no puede superar 100" })
     limit: number = 10;
 }

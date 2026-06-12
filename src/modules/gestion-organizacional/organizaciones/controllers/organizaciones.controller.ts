@@ -1,21 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import { Controller, Get, Query, Res } from '@nestjs/common';
 import { OrganizacionesService } from '../services/organizaciones.service';
-import { CreateOrganizacioneDto } from '../dto/create-organizacione.dto';
-import { UpdateOrganizacioneDto } from '../dto/update-organizacione.dto';
-import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { OkRes } from 'src/shared/utils';
+import { FilterOrganizacionesDto } from '../dto/filter-organizaciones.dto';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 
 @ApiTags('Organizaciones')
 @Controller('organizaciones')
 export class OrganizacionesController {
-	constructor(private readonly organizacionesService: OrganizacionesService) { }
+    constructor(private readonly organizacionesService: OrganizacionesService) {}
 
-	@Get()
-	async findAll(@Res() res: Response){
-		const organizaciones = await this.organizacionesService.findAll();
-		return OkRes(res,{
-			organizaciones: organizaciones
-		})
-	}
+    @Get()
+    @ApiOperation({ summary: 'Listar organizaciones con paginación y filtros opcionales' })
+    @ApiOkResponse({ type: PaginationResponseDto, description: 'Listado paginado de organizaciones' })
+    async findAll(@Query() params: FilterOrganizacionesDto, @Res() res: Response) {
+        const result = await this.organizacionesService.findAll(params);
+        return OkRes(res, result);
+    }
 }

@@ -29,14 +29,44 @@ export class OrganizacionesService {
 		return await repo.save(organizacion);
 	}
 
-	async findAll(){
-		const organizaciones = await this.organizacionRepository.find({
-			relations: {
-				tipo: true,
-				departamento: true
-			}
-		})
-		return organizaciones;
+	async findAll(params?: { page?: number; limit?: number; departamento?: number; esNacional?: boolean; tipo?: number; search?: string }) {
+		const page = params?.page ?? 1;
+		const limit = params?.limit ?? 10;
+
+		const qb = this.organizacionRepository
+			.createQueryBuilder('o')
+			.leftJoinAndSelect('o.tipo', 'tipo')
+			.leftJoinAndSelect('o.departamento', 'departamento')
+			.orderBy('o.id', 'ASC');
+
+		if (params?.search) {
+			qb.andWhere('o.nombre ILIKE :search', { search: `%${params.search}%` });
+		}
+
+		if (params?.departamento) {
+			qb.andWhere('o.idDepartamento = :departamento', { departamento: params.departamento });
+		}
+
+		if (params?.esNacional !== undefined) {
+			qb.andWhere('o.esNacional = :esNacional', { esNacional: params.esNacional });
+		}
+
+		if (params?.tipo) {
+			qb.andWhere('o.idTipo = :tipo', { tipo: params.tipo });
+		}
+
+		const [organizaciones, total] = await qb
+			.skip((page - 1) * limit)
+			.take(limit)
+			.getManyAndCount();
+
+		return {
+			data: organizaciones,
+			page,
+			limit,
+			pages: Math.ceil(total / limit),
+			total,
+		};
 	}
 }
 

@@ -22,3 +22,17 @@ export const SwaggerConflictCommon = () => {
         type: CommonResponseDto
     }
 }
+
+export const SwaggerUnauthorizedCommon = () => {
+    return {
+        description: 'Token inválido, expirado o no proporcionado',
+        type: CommonResponseDto
+    }
+}
+
+export const SwaggerForbiddenCommon = () => {
+    return {
+        description: 'El usuario no tiene el rol necesario para este recurso',
+        type: CommonResponseDto
+    }
+}
