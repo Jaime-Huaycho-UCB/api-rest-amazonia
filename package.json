@@ -20,9 +20,11 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed:superadmin": "ts-node -r tsconfig-paths/register scripts/seed-superadmin.ts",
     "migrate:auth": "ts-node -r tsconfig-paths/register scripts/migrate-auth-tables.ts",
-    "migrate:images": "ts-node -r tsconfig-paths/register scripts/migrate-images.ts"
+    "migrate:images": "ts-node -r tsconfig-paths/register scripts/migrate-images.ts",
+    "migrate:georef": "ts-node -r tsconfig-paths/register scripts/migrate-georef.ts"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -33,6 +35,7 @@
     "@nestjs/swagger": "^11.2.1",
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^11.0.0",
+    "axios": "^1.17.0",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",

@@ -25,4 +25,7 @@ export const validationSchema = Joi.object({
 
     UPLOADS_PATH: Joi.string().default('./uploads'),
     UPLOADS_BASE_URL: Joi.string().default('http://localhost:3333/uploads'),
+
+    GEOREF_URL: Joi.string().default('http://127.0.0.1:8001'),
+    GEOREF_TIMEOUT_MS: Joi.number().default(5000),
 });

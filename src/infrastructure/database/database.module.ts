@@ -21,6 +21,13 @@ import { MyDataBaseConfig } from '../config/services/database.config';
                     autoLoadEntities: true,
                     synchronize: false,
                     logging: dbConfig.logging ?? false,
+                    // Supabase requires SSL; pooler host contains "supabase"
+                    ssl: dbConfig.host?.includes('supabase') ? { rejectUnauthorized: false } : undefined,
+                    extra: {
+                        max: 5,
+                        min: 1,
+                        idleTimeoutMillis: 30000,
+                    },
                 };
             },
         }),

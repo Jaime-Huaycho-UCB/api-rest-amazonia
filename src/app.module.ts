@@ -40,6 +40,7 @@ import { ComunidadesMunicipiosModule } from './modules/ubicaciones-geograficas/c
 import { FormulariosModule } from './app/formularios/formularios.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { GeorefModule } from './modules/georef/georef.module';
 
 @Module({
 	imports: [
@@ -89,6 +90,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 		ComunidadesMunicipiosModule,
 		FormulariosModule,
 		DashboardModule,
+		GeorefModule,
 	],
 	providers: [
 		// Aplica el rate limiting global a todos los endpoints

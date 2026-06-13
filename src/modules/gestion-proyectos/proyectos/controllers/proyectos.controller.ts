@@ -77,6 +77,16 @@ export class ProyectosController {
         return OkRes(res, { ...result, data: cards });
     }
 
+    @ApiTags('Proyectos — Público')
+    @Get('map')
+    @UseGuards(OptionalJwtAuthGuard)
+    @ApiOperation({ summary: 'Proyectos con coordenadas para renderizar en el mapa (MapLibre GL). Solo proyectos que tienen lat/lng.' })
+    @ApiOkResponse({ description: 'Array de proyectos con lat, lng, department, municipality y datos del actor principal.' })
+    async findForMap(@Res() res: Response) {
+        const result = await this.proyectosService.findForMap();
+        return OkRes(res, result);
+    }
+
     // ── Autenticado ────────────────────────────────────────────────────────────
 
     @ApiTags('Proyectos — Autenticado')

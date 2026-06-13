@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDefined, IsInt, IsNotEmpty, IsOptional, IsString, IsArray, ArrayNotEmpty, ValidateNested, IsIn, Min, Length, Matches } from "class-validator";
+import { IsDefined, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, IsArray, ArrayNotEmpty, ValidateNested, IsIn, Max, Min, Length, Matches } from "class-validator";
 import { Type } from "class-transformer";
 
 import { RegisterTipoDto } from "./register-tipo.dto";
@@ -106,4 +106,18 @@ export class RegisterProyectosDto {
     @ValidateNested()
     @Type(() => RegisterDesarrolloDto)
     desarrollo?: RegisterDesarrolloDto
+
+    @ApiProperty({ description: 'Latitud WGS84 (rango Bolivia: -23.0 a -9.0)', example: -17.7833, required: false })
+    @IsOptional()
+    @IsNumber()
+    @Min(-23.0)
+    @Max(-9.0)
+    lat?: number
+
+    @ApiProperty({ description: 'Longitud WGS84 (rango Bolivia: -70.0 a -57.0)', example: -63.1821, required: false })
+    @IsOptional()
+    @IsNumber()
+    @Min(-70.0)
+    @Max(-57.0)
+    lng?: number
 }

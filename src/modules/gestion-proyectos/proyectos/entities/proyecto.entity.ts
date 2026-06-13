@@ -45,6 +45,24 @@ export class Proyecto {
     @Column({ name: 'imagen_principal_path', type: 'text', nullable: true })
     imagenPrincipalPath: string | null;
 
+    @Column({ name: 'lat', type: 'decimal', precision: 10, scale: 7, nullable: true })
+    lat: number | null;
+
+    @Column({ name: 'lng', type: 'decimal', precision: 10, scale: 7, nullable: true })
+    lng: number | null;
+
+    @Column({ name: 'department', type: 'varchar', length: 100, nullable: true })
+    department: string | null;
+
+    @Column({ name: 'municipality', type: 'varchar', length: 150, nullable: true })
+    municipality: string | null;
+
+    @Column({ name: 'georef_resolved_at', type: 'timestamp', nullable: true })
+    georefResolvedAt: Date | null;
+
+    @Column({ name: 'georef_failed', type: 'boolean', default: false })
+    georefFailed: boolean;
+
     @ManyToOne(() => Area, (area) => area.proyectos)
     @JoinColumn({ name: 'id_area' })
     area: Area;

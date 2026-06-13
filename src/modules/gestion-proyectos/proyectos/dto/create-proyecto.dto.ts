@@ -26,4 +26,7 @@ export class CreateProyectoDto {
     area: AreasEnum
     conservacion?: CreateConservacionDto
     desarrollo?: CreateComunidadesIndigenasAreaDto
+
+    lat?: number
+    lng?: number
 }

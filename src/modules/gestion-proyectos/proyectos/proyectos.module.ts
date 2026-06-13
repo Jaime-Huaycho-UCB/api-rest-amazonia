@@ -13,6 +13,7 @@ import { ConservacionAgricolasModule } from 'src/modules/gestion-conservacion/co
 import { ComunidadesIndigenasAreasModule } from 'src/modules/gestion-comunidades/comunidades-indigenas-areas/comunidades-indigenas-areas.module';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { UploadModule } from 'src/shared/upload/upload.module';
+import { GeorefModule } from 'src/modules/georef/georef.module';
 
 @Module({
 	imports: [
@@ -26,6 +27,7 @@ import { UploadModule } from 'src/shared/upload/upload.module';
 		ComunidadesIndigenasAreasModule,
 		AuthModule,
 		UploadModule,
+		GeorefModule,
 	],
 	controllers: [ProyectosController],
 	providers: [ProyectosService],

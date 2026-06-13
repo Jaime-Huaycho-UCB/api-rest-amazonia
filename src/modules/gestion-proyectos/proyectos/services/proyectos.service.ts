@@ -17,6 +17,7 @@ import { ConservacionAgricolasService } from 'src/modules/gestion-conservacion/c
 import { ComunidadesIndigenasAreasService } from 'src/modules/gestion-comunidades/comunidades-indigenas-areas/services/comunidades-indigenas-areas.service';
 import { buildPagination } from 'src/shared/utils';
 import { UploadService } from 'src/shared/upload/upload.service';
+import { GeorefService } from 'src/modules/georef/georef.service';
 
 interface CacheEntry { data: unknown; expiresAt: number; }
 
@@ -37,6 +38,7 @@ export class ProyectosService {
 		private readonly conservacionAgricolasService: ConservacionAgricolasService,
 		private readonly comunidadesIndigenasAreasService: ComunidadesIndigenasAreasService,
 		private readonly uploadService: UploadService,
+		private readonly georefService: GeorefService,
 	){}
 
 	async findOne(id: number) {
@@ -77,6 +79,11 @@ export class ProyectosService {
 		}
 		proyecto.idArea = data.area;
 		proyecto.idTipo = tipoProyecto.id;
+
+		// Store raw coordinates; georef enrichment runs after save
+		if (data.lat != null) proyecto.lat = data.lat;
+		if (data.lng != null) proyecto.lng = data.lng;
+
 		const proyectoSaved = await repo.save(proyecto);
 		await this.localidadesProyectosService.createMany(proyecto.id, data.municipiosTrabajo, manager);
 		await this.ayudasProyectosService.createMany(proyectoSaved.id, data.ayudas, manager);
@@ -91,6 +98,21 @@ export class ProyectosService {
 			default:
 				throw new MyBadRequestException('Ingrese una area especifica del proyecto');
 		}
+
+		// Enrich with GeoRef department/municipality if coordinates were provided
+		if (data.lat != null && data.lng != null) {
+			const region = await this.georefService.resolveCoordinates({ lat: data.lat, lng: data.lng });
+			const georefUpdate: Partial<Proyecto> = region
+				? {
+					department: region.department,
+					municipality: region.municipality,
+					georefFailed: !region.found,
+					georefResolvedAt: new Date(),
+				}
+				: { georefFailed: true };
+			await repo.update(proyectoSaved.id, georefUpdate);
+		}
+
 		return proyectoSaved;
 	}
 
@@ -165,6 +187,39 @@ export class ProyectosService {
 			.getManyAndCount();
 
 		return buildPagination(proyectos, total, page, limit);
+	}
+
+	async findForMap() {
+		return this.proyectoRepository
+			.createQueryBuilder('p')
+			.leftJoin('p.proyectosEmpresas', 'pe')
+			.leftJoin('pe.empresa', 'e')
+			.leftJoin('p.proyectosOrganizaciones', 'po')
+			.leftJoin('po.organizacion', 'o')
+			.leftJoin('p.area', 'a')
+			.leftJoin('p.tipo', 't')
+			.where('p.lat IS NOT NULL AND p.lng IS NOT NULL')
+			.select([
+				'p.id',
+				'p.nombre',
+				'p.descripcion',
+				'p.lat',
+				'p.lng',
+				'p.department',
+				'p.municipality',
+				'p.anioInicio',
+				'p.anioFin',
+				'p.imagenPrincipalUrl',
+				'a.id',
+				'a.nombre',
+				't.id',
+				't.nombre',
+				'e.id',
+				'e.nombre',
+				'o.id',
+				'o.nombre',
+			])
+			.getMany();
 	}
 
 	async findFiltrosDisponibles() {
