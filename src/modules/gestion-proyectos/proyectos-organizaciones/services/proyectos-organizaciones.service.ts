@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ProyectoOrganizacion } from '../entities/proyecto-organizacion.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { CreateProyectoDto } from '../../proyectos/dto/create-proyecto.dto';
-import { ProyectosService } from '../../proyectos/services/proyectos.service';
+import { ProyectosService, ResolvedRegion } from '../../proyectos/services/proyectos.service';
 import { parse } from 'date-fns';
 import { LinkProyectoDto } from 'src/app/formularios/dto/proyectos/link-proyecto.dto';
 import { Proyecto } from '../../proyectos/entities/proyecto.entity';
@@ -17,12 +17,13 @@ export class ProyectosOrganizacionesService {
 		private readonly proyectosService: ProyectosService,
 	) { }
 
-	async createMany(idOrganizacion: number, proyectos: CreateProyectoDto[], manager: EntityManager) {
+	async createMany(idOrganizacion: number, proyectos: CreateProyectoDto[], manager: EntityManager, regions?: ResolvedRegion[]) {
 		const repo = manager ? manager.getRepository(ProyectoOrganizacion) : this.proyectoOrganizacionRepository;
 
 		const proyectosSaved: ProyectoOrganizacion[] = await Promise.all(
-			proyectos.map(async (p) => {
-				const proyectoSaved = await this.proyectosService.create(p, manager);
+			proyectos.map(async (p, i) => {
+				const preResolved = regions ? { region: regions[i] } : undefined;
+				const proyectoSaved = await this.proyectosService.create(p, manager, preResolved);
 
 				const fechaInicioDate = parse(p.fechaInicio, 'dd-MM-yyyy', new Date());
 				const fechaFinDate = p.fechaFin ? parse(p.fechaFin, 'dd-MM-yyyy', new Date()) : undefined;

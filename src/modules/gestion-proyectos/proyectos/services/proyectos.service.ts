@@ -18,8 +18,16 @@ import { ComunidadesIndigenasAreasService } from 'src/modules/gestion-comunidade
 import { buildPagination } from 'src/shared/utils';
 import { UploadService } from 'src/shared/upload/upload.service';
 import { GeorefService } from 'src/modules/georef/georef.service';
+import { GeoRefResponse } from 'src/modules/georef/georef.dto';
 
 interface CacheEntry { data: unknown; expiresAt: number; }
+
+/**
+ * Región pre-resuelta por GeoRef. `null` = sin coordenadas o resolución fallida.
+ * Se pasa a `create()` para que la llamada HTTP a GeoRef ocurra FUERA de la
+ * transacción de BD (AUDIT-009).
+ */
+export type ResolvedRegion = GeoRefResponse | null;
 
 @Injectable()
 export class ProyectosService {
@@ -67,7 +75,18 @@ export class ProyectosService {
 		return proyecto;
 	}
 
-	async create(data: CreateProyectoDto, manager?: EntityManager){
+	/**
+	 * Resuelve la región (departamento/provincia) de unas coordenadas vía GeoRef.
+	 * Debe llamarse ANTES de abrir la transacción de BD (AUDIT-009) para no
+	 * retener conexiones durante la latencia HTTP. Devuelve `null` si no hay
+	 * coordenadas o si GeoRef no responde (degradación elegante).
+	 */
+	async resolveRegionFor(data: Pick<CreateProyectoDto, 'lat' | 'lng'>): Promise<ResolvedRegion> {
+		if (data.lat == null || data.lng == null) return null;
+		return this.georefService.resolveCoordinates({ lat: data.lat, lng: data.lng });
+	}
+
+	async create(data: CreateProyectoDto, manager?: EntityManager, preResolved?: { region: ResolvedRegion }){
 		const repo = manager ? manager.getRepository(Proyecto) : this.proyectoRepository;
 		const tipoProyecto = await this.tiposProyectosService.findOneOrCreate(data.tipo, manager);
 		const proyecto = new Proyecto();
@@ -99,9 +118,13 @@ export class ProyectosService {
 				throw new MyBadRequestException('Ingrese una area especifica del proyecto');
 		}
 
-		// Enrich with GeoRef department/municipality if coordinates were provided
+		// Enrich with GeoRef department/municipality if coordinates were provided.
+		// AUDIT-009: si `preResolved` viene dado, se usa la región ya resuelta
+		// FUERA de la transacción; si no, se resuelve aquí (compatibilidad).
 		if (data.lat != null && data.lng != null) {
-			const region = await this.georefService.resolveCoordinates({ lat: data.lat, lng: data.lng });
+			const region = preResolved !== undefined
+				? preResolved.region
+				: await this.georefService.resolveCoordinates({ lat: data.lat, lng: data.lng });
 			const georefUpdate: Partial<Proyecto> = region
 				? {
 					department: region.department,
