@@ -10,10 +10,15 @@ export class FilterDepartamentosDto extends PaginationParamsDto {
         example: true,
     })
     @IsOptional()
-    @Transform(({ value }) => {
-        if (value === 'true') return true;
-        if (value === 'false') return false;
-        return value;
+    // AUDIT-006: leer el valor crudo de `obj` (no `value`), porque el
+    // ValidationPipe global usa enableImplicitConversion y coerciona el string
+    // a boolean ANTES del transform (Boolean('false') === true). Desde `obj`
+    // tenemos el string original sin coercionar.
+    @Transform(({ obj }) => {
+        const raw = obj?.amazonico;
+        if (raw === 'true' || raw === true) return true;
+        if (raw === 'false' || raw === false) return false;
+        return undefined;
     })
     @IsBoolean({ message: "El parámetro 'amazonico' debe ser true o false" })
     amazonico?: boolean;
