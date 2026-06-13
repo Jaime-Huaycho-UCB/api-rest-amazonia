@@ -97,7 +97,17 @@
       "^src/(.*)$": "<rootDir>/$1"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/*.module.ts",
+      "!**/*.entity.ts",
+      "!**/*.dto.ts",
+      "!**/*.interface.ts",
+      "!**/main.ts",
+      "!**/*.enum.ts",
+      "!**/find-template*/**",
+      "!**/find-templates/**",
+      "!**/shared/utils/swagger/**",
+      "!**/decorators/**"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
