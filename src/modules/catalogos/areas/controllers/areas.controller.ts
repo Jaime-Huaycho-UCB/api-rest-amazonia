@@ -1,10 +1,11 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { AreasService } from '../services/areas.service';
-import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { OkRes } from 'src/shared/utils';
 import { FindAllAreasDto } from '../dto/find-all-areas.dto';
 
+@ApiTags('Catálogos')
 @Controller('areas')
 export class AreasController {
 	constructor(

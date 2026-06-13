@@ -21,7 +21,8 @@
     "seed:superadmin": "ts-node -r tsconfig-paths/register scripts/seed-superadmin.ts",
     "migrate:auth": "ts-node -r tsconfig-paths/register scripts/migrate-auth-tables.ts",
     "migrate:images": "ts-node -r tsconfig-paths/register scripts/migrate-images.ts",
-    "migrate:georef": "ts-node -r tsconfig-paths/register scripts/migrate-georef.ts"
+    "migrate:georef": "ts-node -r tsconfig-paths/register scripts/migrate-georef.ts",
+    "openapi:export": "ts-node -r tsconfig-paths/register scripts/export-openapi.ts"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",

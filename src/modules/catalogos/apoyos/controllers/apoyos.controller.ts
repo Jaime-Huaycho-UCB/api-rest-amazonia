@@ -4,9 +4,10 @@ import { CreateApoyoDto } from '../dto/inputs/create-apoyo.dto';
 import { UpdateApoyoDto } from '../dto/inputs/update-apoyo.dto';
 import { Response } from 'express';
 import { OkRes } from 'src/shared/utils';
-import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FindAllApoyoFormsDto } from '../dto/outputs/find-all-apoyo-forms.dto';
 
+@ApiTags('Catálogos')
 @Controller('apoyos')
 export class ApoyosController {
 	constructor(

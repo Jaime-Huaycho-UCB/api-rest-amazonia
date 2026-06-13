@@ -2,9 +2,10 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/
 import { OdsService } from '../services/ods.service';
 import { Response } from 'express';
 import { OkRes } from 'src/shared/utils';
-import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FindAllOdsDto } from '../dto/find-all-ods.dto';
 
+@ApiTags('Catálogos')
 @Controller('ods')
 export class OdsController {
 	constructor(
