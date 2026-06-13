@@ -41,6 +41,7 @@ import { FormulariosModule } from './app/formularios/formularios.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { GeorefModule } from './modules/georef/georef.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
 	imports: [
@@ -91,6 +92,7 @@ import { GeorefModule } from './modules/georef/georef.module';
 		FormulariosModule,
 		DashboardModule,
 		GeorefModule,
+		HealthModule,
 	],
 	providers: [
 		// Aplica el rate limiting global a todos los endpoints
