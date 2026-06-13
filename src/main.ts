@@ -1,7 +1,8 @@
 import { NestFactory } from '@nestjs/core';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { buildValidationPipe } from './shared/validation/validation-pipe.config';
 import { MyServerConfig } from './infrastructure/config/services/server.config';
 import { EnviromentEnum } from './shared/enums/enviroment.enum';
 import { environmentConfig } from './infrastructure/config/services/enviroment.config';
@@ -15,6 +16,10 @@ async function bootstrap() {
 	});
 	app.enableShutdownHooks();
 	const myServer = app.get(MyServerConfig).get();
+
+	// AUDIT-004: headers de seguridad (no hay Nginx en PaaS) y ocultar fingerprint.
+	app.use(helmet());
+	app.getHttpAdapter().getInstance().disable('x-powered-by');
 
 	app.setGlobalPrefix('api')
 
@@ -83,12 +88,8 @@ async function bootstrap() {
 	const corsOptions = getCorsOptions(myServer.domainFrontend);
 	app.enableCors(corsOptions);
 
-	app.useGlobalPipes(new ValidationPipe({
-		transform: true,
-		transformOptions: {
-			enableImplicitConversion: true,
-		},
-	}));
+	// AUDIT-002: validación estricta (whitelist + forbidNonWhitelisted).
+	app.useGlobalPipes(buildValidationPipe());
 
 	await app.listen(myServer.port);
 	logServerStatus(myServer);
