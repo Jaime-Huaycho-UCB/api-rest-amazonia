@@ -1,98 +1,170 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Kaa Iya — API REST (Backend NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend de la plataforma **Kaa Iya** ("Espíritu del Bosque"), para visibilizar y gestionar
+iniciativas sostenibles de la Amazonía boliviana. Desarrollado en la UCB "San Pablo" para la
+Cátedra Nazaria Ignacia "Querida Amazonía".
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+| Capa | Tecnología |
+|------|-----------|
+| Framework | NestJS 11 · TypeScript 5 · Node 18–22 |
+| Base de datos | PostgreSQL 14+ (Supabase) vía TypeORM 0.3 (`synchronize: false`) |
+| Auth | JWT + Passport · bcrypt (cost 12) |
+| Validación | class-validator + ValidationPipe estricto (whitelist) |
+| Seguridad | helmet · @nestjs/throttler (rate limiting) · CORS configurable |
+| Docs | Swagger/OpenAPI 3 (`/api/documentation`) |
+| Georreferenciación | cliente HTTP del microservicio `georef-service` |
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## Inicio rápido
 
 ```bash
-$ npm install
+git clone <repo>
+cd api-rest-amazonia
+cp .env.example .env        # editar valores (ver tabla abajo)
+npm install
+npm run start:dev           # hot-reload en http://localhost:3333
 ```
 
-## Compile and run the project
+- API: `http://localhost:3333/api`
+- Swagger UI: `http://localhost:3333/api/documentation` (dev/test/debug; off en producción)
+- Health: `http://localhost:3333/api/health`
+
+> El microservicio **GeoRef** debe estar corriendo (`http://127.0.0.1:8001`) para que los
+> proyectos con coordenadas resuelvan departamento/municipio. Si está caído, el registro
+> sigue funcionando (degradación elegante: `georefFailed=true`). Ver `../georef-service/README.md`.
+
+## Variables de entorno
+
+| Variable | Obligatoria | Default | Descripción |
+|---|---|---|---|
+| `NODE_ENV` | no | `development` | `development` \| `production` \| `test` \| `debug` |
+| `PORT` | no | `3333` | Puerto HTTP (en PaaS lo inyecta la plataforma) |
+| `DOMAIN_FRONTEND` | sí | — | Origen(es) CORS. `*` deshabilita credenciales; lista separada por comas para permitir credenciales |
+| `DB_TYPE` | sí | `postgres` | Motor de BD |
+| `DB_HOST` | sí | — | Host PostgreSQL/Supabase (SSL automático si contiene `supabase`) |
+| `DB_PORT` | sí | `5432` | Puerto BD |
+| `DB_USER` | sí | — | Usuario BD |
+| `DB_NAME` | sí | — | Nombre de la BD |
+| `DB_PASSWORD` | sí | — | Contraseña BD |
+| `DB_LOGS` | no | `false` | Logs de queries TypeORM |
+| `ACTIVE_JWT` | no | `true` | `false` desactiva JWT en development (siempre activo en production) |
+| `JWT_SECRET` | sí | — | Secreto de firma JWT (generar: `openssl rand -base64 64`) |
+| `JWT_TIME_EXPIRE` | no | `24h` | Vigencia del token |
+| `GEOREF_URL` | sí | `http://127.0.0.1:8001` | URL del microservicio GeoRef |
+| `GEOREF_TIMEOUT_MS` | no | `5000` | Timeout por request a GeoRef |
+| `UPLOADS_PATH` | no | `./uploads` | Directorio de imágenes subidas |
+| `UPLOADS_BASE_URL` | no | — | Base URL pública de `/uploads` |
+| `SEED_SUPERADMIN_EMAIL` / `SEED_SUPERADMIN_PASSWORD` | no | — | Credenciales para `npm run seed:superadmin` |
+
+## Estructura del proyecto
+
+```
+src/
+├── main.ts                  # Bootstrap: helmet, CORS, ValidationPipe estricto, Swagger, prefix /api
+├── app.module.ts            # Módulo raíz (throttler global + todos los módulos)
+├── app/formularios/         # Punto de entrada público: registro transaccional de empresas/orgs
+├── infrastructure/
+│   ├── config/              # Configuración por ambiente con validación Joi (MyConfigService)
+│   └── database/            # TypeORM (SSL Supabase, pool max 5)
+├── modules/
+│   ├── auth/                # JWT, usuarios, roles, solicitudes de acceso, guards
+│   ├── catalogos/           # 12 catálogos maestros (patrón esPropio)
+│   ├── gestion-empresarial/ # Empresas + pivots
+│   ├── gestion-organizacional/
+│   ├── gestion-proyectos/   # Proyectos (bifurcación conservación/desarrollo) + pivots
+│   ├── gestion-conservacion/
+│   ├── gestion-comunidades/
+│   ├── ubicaciones-geograficas/  # Departamentos, municipios, comunidades indígenas
+│   ├── dashboard/           # KPIs y listados (vistas materializadas + caché)
+│   ├── georef/              # Cliente del microservicio GeoRef
+│   └── health/              # Liveness / readiness probes
+└── shared/                  # DTOs, enums, excepciones, utils, validación, swagger
+```
+
+## Módulos principales
+
+### Auth (`/api/auth`)
+JWT con jerarquía de roles **Superadmin(1) > Admin(2) > Investigador(3)**.
+- Público: `POST /auth/login`, `POST /auth/solicitar-acceso`.
+- Autenticado: `GET/PUT /auth/me`, `POST /auth/change-password`, `POST /auth/logout`.
+- Admin: `POST /auth/register`, `GET /auth/usuarios[/:id]`, `PATCH /auth/usuarios/:id`,
+  `DELETE /auth/usuarios/:id` (Superadmin), gestión de solicitudes.
+- Invalidación inmediata de tokens vía `token_valid_from` (al desactivar cuenta / cambiar password).
+
+### Formularios (`/api/formularios`) — público
+Registro transaccional completo: `POST /formularios/empresas`, `POST /formularios/organizaciones`.
+Patrón `seleccionados + otros` y bifurcación por área del proyecto. La resolución GeoRef ocurre
+**antes** de la transacción (no retiene conexiones).
+
+### Catálogos (`/api/*`) — público
+Datos maestros para formularios (`/forms` excluye entradas `esPropio`).
+
+### Proyectos / Empresas / Organizaciones
+Listados con filtros y paginación; respuesta dual por autenticación (`OptionalJwtAuthGuard`):
+sin token → cards públicas; con token → detalle completo. `GET /proyectos/map` para MapLibre.
+Subida de imágenes (logos, imagen principal, galería) con `sharp` (WebP).
+
+### Dashboard (`/api/dashboard`) — JWT
+Métricas agregadas sobre vistas materializadas de PostgreSQL, con caché en memoria por endpoint.
+
+### GeoRef
+Cliente del microservicio (no expone controller HTTP). Resuelve coordenadas WGS84 → departamento/provincia.
+
+### Health (`/api/health`)
+`GET /health` (liveness) y `GET /health/ready` (readiness: BD + GeoRef). Sin rate limit.
+
+## Sistema de usuarios y roles
+
+- **Superadmin (1):** todo, incluido eliminar usuarios y crear cualquier rol.
+- **Admin (2):** gestiona usuarios (no Superadmin), aprueba solicitudes de investigadores.
+- **Investigador (3):** acceso de lectura autenticado; se crea vía solicitud + aprobación, con
+  fecha de expiración de acceso.
+- Login: `POST /auth/login` → `{ accessToken }`; enviar `Authorization: Bearer <token>`.
+
+## Scripts npm
+
+| Script | Descripción |
+|---|---|
+| `npm run start:dev` | Desarrollo con hot-reload |
+| `npm run build` | Compila a `dist/` |
+| `npm run start:prod` | Ejecuta `dist/main` |
+| `npm run lint` | ESLint con auto-fix |
+| `npm test` / `npm run test:cov` | Tests / con cobertura |
+| `npm run openapi:export` | Genera `openapi.json` (para tipos del frontend) |
+| `npm run migrate:auth` / `:images` / `:georef` | Migraciones declarativas |
+| `npm run seed:superadmin` | Crea el superadmin inicial (no productivo) |
+
+## Base de datos
+
+Esquema declarativo en [`database/`](database/README.md): `schema/`, `seeds/`, `migrations/`,
+`snapshots/`. **No** usar `synchronize`. Ver `database/README.md` para aplicar/migrar.
+
+## Tests
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm test            # unitarios (Jest)
+npm run test:cov    # cobertura (acotada a archivos de lógica)
 ```
+Suite core actual: cors, ValidationPipe, JwtStrategy, guards, GeorefService, ProyectosService,
+FilterDepartamentos, utils, health. Plan de ampliación en `../docs/pending-issues.md`.
 
-## Run tests
+## Swagger / OpenAPI
 
-```bash
-# unit tests
-$ npm run test
+- UI: `http://localhost:3333/api/documentation`
+- Spec exportable: `npm run openapi:export` → `openapi.json`
+- Generar cliente tipado: `npx openapi-typescript openapi.json -o types.ts`
 
-# e2e tests
-$ npm run test:e2e
+## Despliegue
 
-# test coverage
-$ npm run test:cov
-```
+Ver la guía de despliegue a Render/Railway en la raíz del monorepo: `../DEPLOY.md`.
 
-## Deployment
+## Troubleshooting
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+| Problema | Causa probable / solución |
+|---|---|
+| `Cannot connect` / SSL a Supabase | `DB_HOST` debe contener `supabase` para activar SSL; verificar credenciales y pooler |
+| Proyectos sin `department`/`municipality` | GeoRef caído o coords fuera de Bolivia → `georefFailed=true` (esperado) |
+| `401` en endpoints de detalle | Requieren JWT; usar `Authorization: Bearer <token>` |
+| `429 Too Many Requests` | Rate limit (60/min global; 5/min en `/auth/login`) |
+| Swagger no carga | Solo en `NODE_ENV` development/test/debug |
