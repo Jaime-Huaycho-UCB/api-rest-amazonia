@@ -1,5 +1,8 @@
+import { Logger } from "@nestjs/common";
 import { EnviromentEnum } from "src/shared/enums/enviroment.enum";
 import { MyServerConfigInterface } from "./server.config";
+
+const logger = new Logger('Bootstrap');
 
 export function logServerStatus(config: MyServerConfigInterface) {
     let color: string;
@@ -30,15 +33,16 @@ export function logServerStatus(config: MyServerConfigInterface) {
 
     const reset = '\x1b[0m';
 
-    if (envName !== EnviromentEnum.DEBUG.toUpperCase()){
-        console.clear()
-    }
-    console.log('=========================================');
-    console.log('   ☕️  AMAZONIA - Server Status');
-    console.log('-----------------------------------------');
-    console.log(`   🚀 Application is running`);
-    console.log(`   🌍 Environment : ${color}${envName}${reset}`);
-    console.log(`   📡 Port        : ${color}${config.port}${reset}`);
-    console.log(`   🔗 API Prefix  : ${color}/api${reset}`);
-    console.log('=========================================');
+    // AUDIT-010: usar el Logger de Nest en lugar de console.log.
+    logger.log(
+        '\n' +
+        '=========================================\n' +
+        '   ☕️  AMAZONIA - Server Status\n' +
+        '-----------------------------------------\n' +
+        '   🚀 Application is running\n' +
+        `   🌍 Environment : ${color}${envName}${reset}\n` +
+        `   📡 Port        : ${color}${config.port}${reset}\n` +
+        `   🔗 API Prefix  : ${color}/api${reset}\n` +
+        '=========================================',
+    );
 }
