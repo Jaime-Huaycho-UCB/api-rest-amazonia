@@ -19,5 +19,5 @@ RUN npm run build
 # Expose the application port
 EXPOSE 3333
 
-# Command to run the application
-CMD ["node", "dist/main"]
+# Command to run the application (nest build emite en dist/src/main.js)
+CMD ["node", "dist/src/main"]
