@@ -188,7 +188,7 @@
     },
     "/api/auth/change-password": {
       "post": {
-        "description": "🔒 **Requiere token válido (cualquier rol).**\n\nPermite cambiar la contraseña verificando primero la contraseña actual.\n\n**Reglas de la nueva contraseña:**\n- Mínimo 8 caracteres\n- Al menos una mayúscula\n- Al menos un número\n- Al menos un símbolo (ej: `!`, `@`, `#`, `$`)\n\n**Nota:** las sesiones activas con el token anterior siguen siendo válidas hasta que expiren de forma natural (TTL del JWT). Para invalidación inmediata se requiere implementar blacklist de tokens (backlog).",
+        "description": "🔒 **Requiere token válido (cualquier rol).**\n\nPermite cambiar la contraseña verificando primero la contraseña actual.\n\n**Reglas de la nueva contraseña:**\n- Mínimo 8 caracteres\n- Al menos una mayúscula\n- Al menos un número\n- Al menos un símbolo (por ejemplo: ! @ # $)\n\n**Nota:** las sesiones activas con el token anterior siguen siendo válidas hasta que expiren de forma natural (TTL del JWT). Para invalidación inmediata se requiere implementar blacklist de tokens (backlog).",
         "operationId": "AuthController_changePassword",
         "parameters": [],
         "requestBody": {

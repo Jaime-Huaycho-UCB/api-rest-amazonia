@@ -162,7 +162,7 @@ export class AuthController {
             '- Mínimo 8 caracteres\n' +
             '- Al menos una mayúscula\n' +
             '- Al menos un número\n' +
-            '- Al menos un símbolo (ej: `!`, `@`, `#`, `$`)\n\n' +
+            '- Al menos un símbolo (por ejemplo: ! @ # $)\n\n' +
             '**Nota:** las sesiones activas con el token anterior siguen siendo válidas hasta que expiren de forma natural (TTL del JWT). ' +
             'Para invalidación inmediata se requiere implementar blacklist de tokens (backlog).',
     })
