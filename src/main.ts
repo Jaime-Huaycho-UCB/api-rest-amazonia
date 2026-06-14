@@ -11,7 +11,9 @@ import { getCorsOptions } from './infrastructure/config/services/cors.config';
 import { logServerStatus } from './infrastructure/config/services/logger.config';
 
 async function bootstrap() {
-	const config = environmentConfig[process.env.NODE_ENV ?? EnviromentEnum.DEVELOPMENT]
+	const nodeEnv = process.env.NODE_ENV ?? EnviromentEnum.DEVELOPMENT;
+	const isProd = nodeEnv === EnviromentEnum.PRODUCTION;
+	const config = environmentConfig[nodeEnv]
 	const app = await NestFactory.create(AppModule, {
 		logger: config.logger
 	});
@@ -19,12 +21,12 @@ async function bootstrap() {
 	const myServer = app.get(MyServerConfig).get();
 
 	// AUDIT-004: headers de seguridad (no hay Nginx en PaaS) y ocultar fingerprint.
-	// La CSP por defecto de helmet (con `upgrade-insecure-requests`) rompe Swagger UI
-	// sobre http://localhost. Como Swagger solo se habilita en dev/test/debug y la API
-	// solo devuelve JSON, se desactiva la CSP cuando Swagger está activo y se conserva
-	// completa (incluida CSP) en producción.
+	// La CSP por defecto de helmet (`upgrade-insecure-requests`) rompe Swagger UI sobre
+	// http://localhost (dev). En producción (https) se mantiene la CSP completa y Swagger
+	// funciona igual porque sus assets son same-origin ('self'). Por eso la CSP se
+	// desactiva solo fuera de producción.
 	app.use(helmet({
-		contentSecurityPolicy: config.swagger ? false : undefined,
+		contentSecurityPolicy: isProd ? undefined : false,
 	}));
 	app.getHttpAdapter().getInstance().disable('x-powered-by');
 

@@ -27,7 +27,7 @@ npm run start:dev           # hot-reload en http://localhost:3333
 ```
 
 - API: `http://localhost:3333/api`
-- Swagger UI: `http://localhost:3333/api/documentation` (dev/test/debug; off en producción)
+- Swagger UI: `http://localhost:3333/api/documentation` (habilitado en todos los entornos, incluido producción)
 - Health: `http://localhost:3333/api/health`
 
 > El microservicio **GeoRef** debe estar corriendo (`http://127.0.0.1:8001`) para que los
@@ -167,4 +167,4 @@ Ver la guía de despliegue a Render/Railway en la raíz del monorepo: `../DEPLOY
 | Proyectos sin `department`/`municipality` | GeoRef caído o coords fuera de Bolivia → `georefFailed=true` (esperado) |
 | `401` en endpoints de detalle | Requieren JWT; usar `Authorization: Bearer <token>` |
 | `429 Too Many Requests` | Rate limit (60/min global; 5/min en `/auth/login`) |
-| Swagger no carga | Solo en `NODE_ENV` development/test/debug |
+| Swagger no carga / error de consola en dev | Recarga con caché limpia (`Ctrl+Shift+R`). En dev la CSP de helmet se desactiva para que Swagger funcione sobre http://localhost |
