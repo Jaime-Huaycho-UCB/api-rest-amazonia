@@ -19,7 +19,13 @@ async function bootstrap() {
 	const myServer = app.get(MyServerConfig).get();
 
 	// AUDIT-004: headers de seguridad (no hay Nginx en PaaS) y ocultar fingerprint.
-	app.use(helmet());
+	// La CSP por defecto de helmet (con `upgrade-insecure-requests`) rompe Swagger UI
+	// sobre http://localhost. Como Swagger solo se habilita en dev/test/debug y la API
+	// solo devuelve JSON, se desactiva la CSP cuando Swagger está activo y se conserva
+	// completa (incluida CSP) en producción.
+	app.use(helmet({
+		contentSecurityPolicy: config.swagger ? false : undefined,
+	}));
 	app.getHttpAdapter().getInstance().disable('x-powered-by');
 
 	app.setGlobalPrefix('api')
