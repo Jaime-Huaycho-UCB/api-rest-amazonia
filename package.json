@@ -22,6 +22,8 @@
     "migrate:auth": "ts-node -r tsconfig-paths/register scripts/migrate-auth-tables.ts",
     "migrate:images": "ts-node -r tsconfig-paths/register scripts/migrate-images.ts",
     "migrate:georef": "ts-node -r tsconfig-paths/register scripts/migrate-georef.ts",
+    "migrate:publicaciones": "ts-node -r tsconfig-paths/register scripts/migrate-publicaciones.ts",
+    "migrate:logs": "ts-node -r tsconfig-paths/register scripts/migrate-logs.ts",
     "openapi:export": "ts-node -r tsconfig-paths/register scripts/export-openapi.ts"
   },
   "dependencies": {

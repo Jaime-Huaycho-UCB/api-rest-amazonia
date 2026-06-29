@@ -22,6 +22,7 @@ import {
 } from 'src/shared/exceptions';
 import { comparePassword, hashPassword } from 'src/shared/utils/crypto.util';
 import { buildPagination } from 'src/shared/utils/pagination.util';
+import { LogsService } from 'src/modules/logs/services/logs.service';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +31,7 @@ export class AuthService {
         private readonly usuarioRepo: Repository<Usuario>,
         private readonly jwtService: JwtService,
         private readonly jwtConfig: MyJwtConfig,
+        private readonly logsService: LogsService,
     ) {}
 
     // Dummy hash para prevenir timing attacks (OWASP A07 - user enumeration)
@@ -47,14 +49,34 @@ export class AuthService {
         const passwordValido = await comparePassword(dto.password, hashToCompare);
 
         if (!usuario || !passwordValido) {
+            this.logsService.registrar({
+                tipo: 'seguridad',
+                severidad: 'warn',
+                accion: 'LOGIN_FALLIDO',
+                detalle: { email: dto.email },
+            });
             throw new MyUnauthorizedException('Credenciales inválidas');
         }
 
         if (!usuario.activo) {
+            this.logsService.registrar({
+                tipo: 'seguridad',
+                severidad: 'warn',
+                accion: 'LOGIN_CUENTA_DESACTIVADA',
+                usuarioId: usuario.id,
+                detalle: { email: dto.email },
+            });
             throw new MyUnauthorizedException('Cuenta desactivada');
         }
 
         if (usuario.fechaExpiracion && new Date() > new Date(usuario.fechaExpiracion)) {
+            this.logsService.registrar({
+                tipo: 'seguridad',
+                severidad: 'warn',
+                accion: 'LOGIN_ACCESO_EXPIRADO',
+                usuarioId: usuario.id,
+                detalle: { email: dto.email },
+            });
             throw new MyUnauthorizedException('Tu acceso ha expirado');
         }
 
@@ -70,6 +92,14 @@ export class AuthService {
 
         const accessToken = this.jwtService.sign(payload);
         const config = this.jwtConfig.get();
+
+        this.logsService.registrar({
+            tipo: 'seguridad',
+            severidad: 'info',
+            accion: 'LOGIN_EXITOSO',
+            usuarioId: usuario.id,
+            detalle: { email: usuario.email, rol: usuario.rol },
+        });
 
         return {
             accessToken,
@@ -108,6 +138,15 @@ export class AuthService {
         });
 
         const guardado = await this.usuarioRepo.save(usuario);
+
+        this.logsService.registrar({
+            tipo: 'seguridad',
+            severidad: 'info',
+            accion: 'USUARIO_CREADO',
+            usuarioId: currentUser.sub,
+            detalle: { emailNuevo: guardado.email, rolNuevo: guardado.rol, creadoPor: currentUser.email },
+        });
+
         return this.toResponse(guardado);
     }
 
@@ -162,6 +201,9 @@ export class AuthService {
         if (dto.nombre !== undefined) usuario.nombre = dto.nombre;
         if (dto.rol !== undefined) usuario.rol = dto.rol;
 
+        const rolAnterior = usuario.rol;
+        const activoAnterior = usuario.activo;
+
         if (dto.activo !== undefined) {
             // Si se desactiva la cuenta, revocar todos los tokens anteriores
             if (dto.activo === false && usuario.activo === true) {
@@ -171,6 +213,27 @@ export class AuthService {
         }
 
         const actualizado = await this.usuarioRepo.save(usuario);
+
+        if (dto.rol !== undefined && dto.rol !== rolAnterior) {
+            this.logsService.registrar({
+                tipo: 'seguridad',
+                severidad: 'critico',
+                accion: 'ROL_CAMBIADO',
+                usuarioId: currentUser.sub,
+                detalle: { usuarioAfectado: id, rolAnterior, rolNuevo: dto.rol, cambiadoPor: currentUser.email },
+            });
+        }
+
+        if (dto.activo !== undefined && dto.activo !== activoAnterior) {
+            this.logsService.registrar({
+                tipo: 'seguridad',
+                severidad: dto.activo ? 'info' : 'critico',
+                accion: dto.activo ? 'CUENTA_ACTIVADA' : 'CUENTA_DESACTIVADA',
+                usuarioId: currentUser.sub,
+                detalle: { usuarioAfectado: id, cambiadoPor: currentUser.email },
+            });
+        }
+
         return this.toResponse(actualizado);
     }
 
@@ -217,6 +280,14 @@ export class AuthService {
         }
 
         await this.usuarioRepo.remove(usuario);
+
+        this.logsService.registrar({
+            tipo: 'seguridad',
+            severidad: 'critico',
+            accion: 'USUARIO_ELIMINADO',
+            usuarioId: currentUser.sub,
+            detalle: { usuarioEliminado: id, email: usuario.email, eliminadoPor: currentUser.email },
+        });
     }
 
     private toResponse(usuario: Usuario): UsuarioResponseDto {
