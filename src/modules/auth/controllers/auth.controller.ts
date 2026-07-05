@@ -57,16 +57,16 @@ export class AuthController {
         summary: 'Iniciar sesión',
         description:
             '🔓 **Acceso público — sin token requerido.**\n\n' +
-            'Valida email y contraseña y devuelve un token JWT de acceso.\n\n' +
-            '**Uso del token:** incluye el `accessToken` recibido en todas las peticiones protegidas:\n' +
-            '`Authorization: Bearer <accessToken>`\n\n' +
+            'Valida email y contraseña y devuelve un token JWT. Además setea una cookie `porerekua_token` httpOnly + Secure para clientes browser.\n\n' +
+            '**Uso del token (clientes no-browser):** incluir `Authorization: Bearer <accessToken>` en peticiones protegidas.\n\n' +
             '**Seguridad:**\n' +
-            '- El tiempo de respuesta es constante independientemente de si el email existe, para prevenir enumeración de usuarios (OWASP A07).\n' +
-            '- **Rate limiting:** máximo 5 intentos por IP cada 60 segundos. Superar este límite devuelve `429`.',
+            '- El tiempo de respuesta es constante para prevenir enumeración de usuarios (OWASP A07).\n' +
+            '- **Rate limiting:** máximo 5 intentos por IP cada 60 segundos. Superar devuelve `429`.\n' +
+            '- La cookie es `httpOnly` (no accesible por JS) y `SameSite=Strict` (protección CSRF).',
     })
     @ApiCreatedResponse({
         type: TokenResponseDto,
-        description: 'Login exitoso. Devuelve el token JWT y su tiempo de expiración.',
+        description: 'Login exitoso. Devuelve el token JWT y setea cookie httpOnly.',
     })
     @ApiBadRequestResponse(SwaggerBadRequestCommon())
     @ApiUnauthorizedResponse({
@@ -75,6 +75,15 @@ export class AuthController {
     @ApiResponse({ status: HttpStatus.TOO_MANY_REQUESTS, ...SwaggerTooManyRequestsCommon() })
     async login(@Body() dto: LoginDto, @Res() res: Response) {
         const result = await this.authService.login(dto);
+        const isProd = process.env.NODE_ENV === 'production';
+        const maxAgeMs = this.authService.parseExpiresInMs(result.expiresIn);
+        res.cookie('porerekua_token', result.accessToken, {
+            httpOnly: true,
+            secure: isProd,
+            sameSite: 'strict',
+            maxAge: maxAgeMs,
+            path: '/',
+        });
         return CreatedRes(res, result);
     }
 
@@ -90,15 +99,15 @@ export class AuthController {
         summary: 'Cerrar sesión',
         description:
             '🔒 **Requiere token válido (cualquier rol).**\n\n' +
-            'Confirma el cierre de sesión del usuario autenticado.\n\n' +
-            '**Importante:** los tokens JWT son stateless — la invalidación real ocurre eliminando el token en el cliente (localStorage, memoria, cookie). ' +
-            'Este endpoint sirve como confirmación semántica del logout.\n\n' +
-            'En una futura versión se puede extender con una blacklist de tokens para invalidación inmediata en servidor.',
+            'Limpia la cookie `porerekua_token` del navegador.\n\n' +
+            '**Nota:** para clientes no-browser (Bearer header), el token JWT sigue siendo técnicamente válido hasta su expiración natural. ' +
+            'Para invalidación inmediata en servidor, usar la funcionalidad de desactivación de cuenta.',
     })
-    @ApiOkResponse({ description: 'Sesión cerrada. El cliente debe eliminar el token localmente.' })
+    @ApiOkResponse({ description: 'Sesión cerrada. Cookie eliminada.' })
     @ApiUnauthorizedResponse(SwaggerUnauthorizedCommon())
     async logout(@Res() res: Response) {
-        return OkRes(res, { message: 'Sesión cerrada. Elimina el token en el cliente.' });
+        res.clearCookie('porerekua_token', { path: '/' });
+        return OkRes(res, { message: 'Sesión cerrada.' });
     }
 
     @Get('me')

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
-import { join } from 'path';
+import { join, resolve, sep } from 'path';
 import sharp from 'sharp';
 import { MyBadRequestException } from '../exceptions';
 
@@ -48,7 +48,12 @@ export class UploadService {
 
     async deleteImage(relativePath: string): Promise<void> {
         if (!relativePath) return;
-        const absolutePath = join(process.cwd(), this.basePath, relativePath);
+        const uploadsRoot = resolve(process.cwd(), this.basePath);
+        const absolutePath = resolve(uploadsRoot, relativePath);
+        // Prevenir path traversal: el path resuelto debe estar dentro de uploadsRoot
+        if (!absolutePath.startsWith(uploadsRoot + sep) && absolutePath !== uploadsRoot) {
+            return;
+        }
         await fs.unlink(absolutePath).catch(() => {
             // silently ignore if file doesn't exist
         });

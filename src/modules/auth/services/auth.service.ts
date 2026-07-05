@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
+import * as ms from 'ms';
 import { Usuario } from '../entities/usuario.entity';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { LoginDto } from '../dto/login.dto';
@@ -288,6 +289,10 @@ export class AuthService {
             usuarioId: currentUser.sub,
             detalle: { usuarioEliminado: id, email: usuario.email, eliminadoPor: currentUser.email },
         });
+    }
+
+    parseExpiresInMs(expiresIn: string): number {
+        return ms(expiresIn as Parameters<typeof ms>[0]) ?? 86400000;
     }
 
     private toResponse(usuario: Usuario): UsuarioResponseDto {

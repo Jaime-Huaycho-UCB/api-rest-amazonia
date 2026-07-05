@@ -2,11 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Request } from 'express';
 import { Repository } from 'typeorm';
 import { MyJwtConfig } from 'src/infrastructure/config/services/jwt.config';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { MyUnauthorizedException } from 'src/shared/exceptions/my-unauthorized.exception';
 import { Usuario } from '../entities/usuario.entity';
+
+const COOKIE_NAME = 'porerekua_token';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -17,7 +20,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     ) {
         const config = jwtConfig.get();
         super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            // Prioridad: cookie httpOnly primero (browser), luego Bearer header (API clients/Swagger)
+            jwtFromRequest: ExtractJwt.fromExtractors([
+                (req: Request) => req?.cookies?.[COOKIE_NAME] ?? null,
+                ExtractJwt.fromAuthHeaderAsBearerToken(),
+            ]),
             ignoreExpiration: false,
             secretOrKey: config.secret,
         });

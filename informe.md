@@ -28,6 +28,26 @@ El alcance funcional del sistema comprende los siguientes componentes:
 
 Adicionalmente, el sistema ha sido concebido desde su diseño inicial para evolucionar progresivamente hacia un ecosistema más complejo, en el cual se integren nuevos actores, se amplíe el volumen y la diversidad de datos disponibles, y se incorporen funcionalidades avanzadas de análisis.
 
+## RESUMEN EJECUTIVO DEL PROYECTO
+
+Kaa Iya es una plataforma web geoespacial creada para registrar, organizar y visualizar iniciativas sostenibles vinculadas a la Amazonía boliviana. Su propósito es centralizar la información de empresas, fundaciones y organizaciones, facilitar el análisis territorial de sus proyectos y ofrecer una base técnica para la toma de decisiones basada en datos.
+
+La solución se divide en tres capas: un backend API REST que administra usuarios, catálogos, proyectos, seguridad y reportes; un microservicio de georreferenciación que transforma coordenadas GPS en ubicación administrativa; y un frontend SPA que consume la API, muestra mapas interactivos y presenta la información de forma clara para el usuario final. El sistema se completa con PostgreSQL como base de datos, Nginx como servidor web y PM2 para la gestión de procesos en producción.
+
+### Herramientas utilizadas por capa
+
+**Backend (API REST / NestJS)**
+
+NestJS 11, TypeScript, Node.js, TypeORM, PostgreSQL, `@nestjs/jwt`, `@nestjs/passport`, `passport-jwt`, `bcrypt`, `helmet`, `@nestjs/throttler`, `class-validator`, `class-transformer`, `joi`, `@nestjs/config`, `@nestjs/swagger`, `rxjs`, `date-fns`, `reflect-metadata`, `Jest`, `supertest`, `SWC`, `ts-node`, `ESLint` y `Prettier`.
+
+**Microservicio de georreferenciación (GeoRef)**
+
+FastAPI, Starlette, Gunicorn, Uvicorn, GeoPandas, Shapely, Pydantic Settings, Python 3.11+, datos geoespaciales GADM 4.1 de Bolivia y archivo GeoJSON cargado en memoria para resolver coordenadas de manera eficiente.
+
+**Frontend (interfaz web)**
+
+React 19, React DOM, TypeScript, Vite, React Router DOM, TanStack Query, Context API, Framer Motion, Axios, Zod, React Hook Form, `@hookform/resolvers`, DOMPurify, js-cookie, jsonwebtoken, jose, bcryptjs, crypto-js, Sentry, Vitest, Testing Library, MSW, ESLint, `eslint-plugin-security`, Husky, lint-staged, Commitlint, Snyk, Rollup Visualizer y MapLibre GL para la visualización geográfica.
+
 ## ARQUITECTURA TECNOLÓGICA DEL SISTEMA
 
 La plataforma está construida sobre un stack moderno orientado a la escalabilidad y mantenibilidad, dividido en dos capas principales: backend (API REST) y frontend (interfaz de usuario), con una base de datos relacional PostgreSQL.
